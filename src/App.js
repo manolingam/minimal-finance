@@ -5,7 +5,7 @@ import Web3 from 'web3';
 import Button from '@material-ui/core/Button';
 import Identicon from 'identicon.js';
 
-import Home from './components/Home/Home';
+import HomePage from './pages/HomePage/HomePage';
 import './App.css';
 
 const cEthAddress = '0xf92fbe0d3c0dcdae407923b2ac17ec223b1084e4';
@@ -327,7 +327,7 @@ class App extends React.Component {
 					)}
 				</nav>
 				<Route exact path='/'>
-					<Home
+					<HomePage
 						cEth={this.state.cEth}
 						cDai={this.state.cDai}
 						networkID={this.state.networkID}
