@@ -3,6 +3,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import Divider from '@material-ui/core/Divider';
 
+import './styles.css';
+
 const Home = ({ values }) => {
 	const {
 		cEth_exchangeRate,
