@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap');
+
+.nav {
+	font-family: 'Do Hyeon', sans-serif;
+}
+
+.nav-account {
+	position: absolute;
+	top: 1em;
+	left: 1em;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+}
+
+.nav-account img {
+	margin-right: 10px;
+}
+
+.nav-buttons {
+	position: absolute;
+	top: 1em;
+	right: 1em;
+}
+
+a {
+	text-decoration: none;
+}
+
+.MuiButton-label {
+	font-family: 'Do Hyeon', sans-serif;
+}
+
+.MuiButton-label {
+	color: white;
+}
+
+.title {
+	color: rgb(19, 151, 59);
+}
