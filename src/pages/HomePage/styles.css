@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap');
 
 .home-container,
 .loader {
@@ -7,5 +7,5 @@
 	flex-direction: row;
 	align-items: center;
 	justify-content: space-around;
-	font-family: 'Do Hyeon', sans-serif;
+	font-family: 'Roboto Slab', serif;
 }

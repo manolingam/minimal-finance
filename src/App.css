@@ -1,7 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Do+Hyeon&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap');
 
 .nav {
-	font-family: 'Do Hyeon', sans-serif;
+	font-family: 'Roboto Slab', serif;
 }
 
 .nav-account {
@@ -11,6 +11,10 @@
 	display: flex;
 	flex-direction: row;
 	align-items: center;
+	border: 1px solid black;
+	background-color: black;
+	border-radius: 5px;
+	padding: 0 0.5em 0 0.5em;
 }
 
 .nav-account img {
@@ -19,7 +23,7 @@
 
 .nav-buttons {
 	position: absolute;
-	top: 1em;
+	top: 2em;
 	right: 1em;
 }
 
@@ -28,13 +32,13 @@ a {
 }
 
 .MuiButton-label {
-	font-family: 'Do Hyeon', sans-serif;
+	font-family: 'Roboto Slab', serif;
 }
 
 .MuiButton-label {
 	color: white;
 }
 
-.title {
-	color: rgb(19, 151, 59);
+#address {
+	color: white;
 }

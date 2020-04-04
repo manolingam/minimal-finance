@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap');
+
+.app-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	font-family: 'Roboto Slab', serif;
+}
+
+.grid-1,
+.grid-2,
+.grid-3,
+.grid-4 {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid black;
+	border-radius: 5px;
+	background-color: white;
+	padding: 2em;
+}
+
+.grid-1 {
+	grid-area: supply;
+}
+.grid-2 {
+	grid-area: redeem;
+}
+.grid-3 {
+	grid-area: borrow;
+}
+.grid-4 {
+	grid-area: repay;
+}
+
+.grid-container {
+	display: grid;
+	grid-template-areas:
+		'supply redeem'
+		'borrow repay';
+	grid-gap: 10px;
+	padding: 10px;
+}
+
+.grid-container p {
+	font-size: 1.3em;
+}

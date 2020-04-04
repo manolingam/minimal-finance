@@ -16,15 +16,13 @@ const Home = ({ values }) => {
 		cDai_borrows,
 		cDai_borrowRate,
 		cDai_tokens,
-		cDai_supplyRate
+		cDai_supplyRate,
 	} = values;
-
-	console.log(values);
 
 	return (
 		<div className='info-container'>
 			<div className='cEth-container'>
-				<h3 className='title'>cEth Info</h3>
+				<h3>cEth Info</h3>
 				<List component='nav' aria-label='main mailbox folders'>
 					<ListItem button>
 						Exchange Rate: {cEth_exchangeRate}
@@ -40,7 +38,7 @@ const Home = ({ values }) => {
 				</List>
 			</div>
 			<div className='cDai-container'>
-				<h3 className='title'>cDai Info</h3>
+				<h3>cDai Info</h3>
 				<List component='nav' aria-label='main mailbox folders'>
 					<ListItem button>
 						Exchange Rate: {cDai_exchangeRate}
