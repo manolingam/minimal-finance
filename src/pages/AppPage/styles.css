@@ -2,10 +2,26 @@
 
 .app-container {
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	align-items: center;
-	justify-content: center;
+	justify-content: space-evenly;
 	font-family: 'Roboto Slab', serif;
+}
+
+.account-stat {
+	max-width: 30%;
+	color: white;
+	font-size: 1.1em;
+}
+
+.account-stat p {
+	line-height: 1.6;
+}
+
+.account-stat span {
+	font-style: italic;
+	color: #40e0d0;
+	font-size: 1.3em;
 }
 
 .grid-1,
@@ -16,7 +32,6 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	border: 1px solid black;
 	border-radius: 5px;
 	background-color: white;
 	padding: 2em;

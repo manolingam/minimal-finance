@@ -2,13 +2,19 @@ import React from 'react';
 
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import CircularProgress from '@material-ui/core/CircularProgress';
 
 import './styles.css';
+
+let supplyEthValue;
 
 class AppPage extends React.Component {
 	constructor() {
 		super();
-		this.state = {};
+		this.state = {
+			statsFetched: false,
+			supplyButton: true,
+		};
 	}
 
 	getBalances = async () => {
@@ -24,49 +30,44 @@ class AppPage extends React.Component {
 			(await cEth.methods.balanceOf(wallet_address).call()) / 1e8;
 		let dai_balance =
 			+(await dai.methods.balanceOf(wallet_address).call()) / 1e18;
+		//balance of underlying (ETH)
+		let _balanceOfUnderlying = await cEth.methods
+			.balanceOfUnderlying(wallet_address)
+			.call();
+		let balanceOfUnderlying = web3.utils
+			.fromWei(_balanceOfUnderlying)
+			.toString();
 
-		this.setState({ eth_balance, ceth_balance, dai_balance });
-	};
-
-	supplyETH = async () => {
-		const ethToSupplyAsCollateral = '0.2';
-		const { cEth, address, web3 } = this.props.values;
-
-		console.log(
-			'\nSupplying ETH to Compound as collateral (you will get cETH in return)...\n'
-		);
-
-		await cEth.methods.mint().send({
-			from: address,
-			gasLimit: web3.utils.toHex(150000),
-			gasPrice: web3.utils.toHex(20000000000),
-			value: web3.utils.toHex(
-				web3.utils.toWei(ethToSupplyAsCollateral, 'ether')
-			),
+		this.setState({
+			eth_balance,
+			ceth_balance,
+			dai_balance,
+			balanceOfUnderlying,
 		});
 	};
 
-	enterMarkets = async () => {
+	accountStat = async () => {
 		const {
-			comptroller,
+			cEth,
 			address,
 			web3,
 			priceOracle,
 			cDai,
+			comptroller,
 		} = this.props.values;
+
 		const cEthAddress = this.props.cEthAddress;
 		const cDaiAddress = this.props.cDaiAddress;
 
+		//exchange rate of cETH to ETH
+		let exchangeRateCurrent = await cEth.methods
+			.exchangeRateCurrent()
+			.call();
+		exchangeRateCurrent = (exchangeRateCurrent / 1e28).toString();
 		console.log(
-			'\nEntering market (via Comptroller contract) for ETH (as collateral)...'
+			'Current exchange rate from cETH to ETH:',
+			exchangeRateCurrent
 		);
-
-		let markets = [cEthAddress];
-		await comptroller.methods.enterMarkets(markets).send({
-			from: address,
-			gasLimit: web3.utils.toHex(150000),
-			gasPrice: web3.utils.toHex(20000000000),
-		});
 
 		console.log('Calculating your liquid assets in Compound...');
 
@@ -94,24 +95,64 @@ class AppPage extends React.Component {
 		let borrowRate = await cDai.methods.borrowRatePerBlock().call();
 		borrowRate = borrowRate / 1e18;
 
+		daiPriceInEth = daiPriceInEth.toFixed(6);
+
+		let borrowLimit = liquidity / daiPriceInEth;
+
 		console.log(
 			`\nYou have ${liquidity} of LIQUID assets (worth of ETH) pooled in Compound.`
 		);
 		console.log(
 			`You can borrow up to ${collateralFactor}% of your TOTAL assets supplied to Compound as DAI.`
 		);
-		console.log(`1 DAI == ${daiPriceInEth.toFixed(6)} ETH`);
-		console.log(
-			`You can borrow up to ${
-				liquidity / daiPriceInEth
-			} DAI from Compound.`
-		);
+		console.log(`1 DAI == ${daiPriceInEth} ETH`);
+		console.log(`You can borrow up to ${borrowLimit} DAI from Compound.`);
 		console.log(
 			`NEVER borrow near the maximum amount because your account will be instantly liquidated.`
 		);
 		console.log(
 			`\nYour borrowed amount INCREASES (${borrowRate} * borrowed amount) DAI per block.\nThis is based on the current borrow rate.\n`
 		);
+
+		this.setState({
+			exchangeRateCurrent,
+			liquidity,
+			collateralFactor,
+			daiPriceInEth,
+			borrowLimit,
+			statsFetched: true,
+		});
+	};
+
+	supplyETH = async () => {
+		if (supplyEthValue) {
+			const { cEth, address, web3 } = this.props.values;
+
+			await cEth.methods.mint().send({
+				from: address,
+				gasLimit: web3.utils.toHex(150000),
+				gasPrice: web3.utils.toHex(20000000000),
+				value: web3.utils.toHex(
+					web3.utils.toWei(supplyEthValue, 'ether')
+				),
+			});
+		}
+	};
+
+	enterMarkets = async () => {
+		const { comptroller, address, web3 } = this.props.values;
+		const cEthAddress = this.props.cEthAddress;
+
+		console.log(
+			'\nEntering market (via Comptroller contract) for ETH (as collateral)...'
+		);
+
+		let markets = [cEthAddress];
+		await comptroller.methods.enterMarkets(markets).send({
+			from: address,
+			gasLimit: web3.utils.toHex(150000),
+			gasPrice: web3.utils.toHex(20000000000),
+		});
 
 		this.getBalances();
 	};
@@ -186,32 +227,53 @@ class AppPage extends React.Component {
 
 		const tokens = await cEth.methods.balanceOfUnderlying(address).call();
 
-		console.log(
-			'You have the following underlying ether',
-			web3.utils.fromWei(tokens.toString(), 'ether')
-		);
+		console.log('Exchanging all cETH based on cToken amount...');
+		await cEth.methods.redeem(tokens * 1e8).send({
+			from: address,
+			gasLimit: web3.utils.toHex(150000),
+			gasPrice: web3.utils.toHex(20000000000),
+		});
 
-		await cEth.methods
-			.redeemUnderlying(web3.utils.toWei((0.4).toString(), 'ether'))
-			.send({
-				from: address,
-				gasLimit: web3.utils.toHex(600000), // posted at compound.finance/developers#gas-costs
-				gasPrice: web3.utils.toHex(20000000000),
-			});
-
-		console.log('Redeemed!');
+		// console.log('Exchanging all cETH based on underlying ETH amount...');
+		// let ethAmount = web3.utils.toWei(balanceOfUnderlying).toString()
+		// await compoundCEthContract.methods.redeemUnderlying(ethAmount).send({
+		//   from: myWalletAddress,
+		//   gasLimit: web3.utils.toHex(150000),
+		//   gasPrice: web3.utils.toHex(20000000000),
+		// });
 
 		this.getBalances();
 	};
 
 	async componentDidMount() {
-		console.log(this.props);
 		await this.getBalances();
+		await this.accountStat();
 	}
 
 	render() {
 		return (
 			<div className='app-container'>
+				{this.state.statsFetched ? (
+					<div className='account-stat'>
+						<p>
+							Your hold
+							<span>{this.state.ceth_balance} cEth</span> for
+							<span>
+								{this.state.balanceOfUnderlying} underlying Eth
+							</span>
+							. You can either redeem your underlying asset or
+							borrow a max of{' '}
+							<span>{this.state.borrowLimit} Dai</span>
+							whose collateral factor is
+							<span>{this.state.collateralFactor}%</span> at the
+							rate of <span>{this.state.daiPriceInEth} Eth</span>
+							each.
+						</p>
+					</div>
+				) : (
+					<CircularProgress />
+				)}
+
 				<div className='grid-container'>
 					<div className='grid-1'>
 						<p>Supply Ether</p>
@@ -223,9 +285,25 @@ class AppPage extends React.Component {
 								shrink: true,
 							}}
 							variant='outlined'
+							onChange={(event) => {
+								if (
+									event.target.value &&
+									event.target.value !== 0
+								) {
+									supplyEthValue = event.target.value;
+									this.setState({ supplyButton: false });
+								} else {
+									this.setState({ supplyButton: true });
+								}
+							}}
 						/>
 						<br></br>
-						<Button variant='contained' color='primary'>
+						<Button
+							variant='contained'
+							color='primary'
+							onClick={this.supplyETH}
+							disabled={this.state.supplyButton}
+						>
 							Supply
 						</Button>
 					</div>
@@ -234,6 +312,16 @@ class AppPage extends React.Component {
 						<TextField
 							id='outlined-number'
 							label={`${this.state.ceth_balance} cETH`}
+							type='number'
+							InputLabelProps={{
+								shrink: true,
+							}}
+							variant='outlined'
+						/>
+						<br></br>
+						<TextField
+							id='outlined-number'
+							label={`${this.state.balanceOfUnderlying} ETH`}
 							type='number'
 							InputLabelProps={{
 								shrink: true,
