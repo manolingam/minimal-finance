@@ -4,9 +4,16 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
+import '../../components/Supply/Supply';
+import '../../components/Redeem/Redeem';
+
 import './styles.css';
+import Supply from '../../components/Supply/Supply';
+import Redeem from '../../components/Redeem/Redeem';
 
 let supplyEthValue;
+let redeemCEthValue;
+let redeemEthValue;
 
 class AppPage extends React.Component {
 	constructor() {
@@ -14,6 +21,11 @@ class AppPage extends React.Component {
 		this.state = {
 			statsFetched: false,
 			supplyButton: true,
+			supplyLoading: false,
+			redeemCEth_disabled: false,
+			redeemEth_disabled: false,
+			redeemEthButton: true,
+			redeemLoading: false,
 		};
 	}
 
@@ -124,18 +136,103 @@ class AppPage extends React.Component {
 		});
 	};
 
+	supplyEthHandler = (event) => {
+		if (
+			event.target.value &&
+			event.target.value > 0 &&
+			event.target.value <= this.state.eth_balance
+		) {
+			supplyEthValue = event.target.value;
+			this.setState({ supplyButton: false });
+		} else {
+			this.setState({ supplyButton: true });
+		}
+	};
+
 	supplyETH = async () => {
 		if (supplyEthValue) {
+			this.setState({ supplyLoading: true });
+
 			const { cEth, address, web3 } = this.props.values;
 
 			await cEth.methods.mint().send({
 				from: address,
-				gasLimit: web3.utils.toHex(150000),
+				gasLimit: web3.utils.toHex(1500000),
 				gasPrice: web3.utils.toHex(20000000000),
 				value: web3.utils.toHex(
 					web3.utils.toWei(supplyEthValue, 'ether')
 				),
 			});
+
+			await this.getBalances();
+
+			this.setState({ supplyLoading: false });
+		}
+	};
+
+	redeemCEthHandler = (event) => {
+		if (event.target.value) {
+			this.setState({ redeemEth_disabled: true });
+		} else {
+			this.setState({
+				redeemEth_disabled: false,
+			});
+		}
+
+		if (
+			event.target.value > 0 &&
+			event.target.value <= this.state.ceth_balance
+		) {
+			redeemCEthValue = event.target.value;
+			this.setState({ redeemEthButton: false });
+		} else {
+			this.setState({ redeemEthButton: true });
+		}
+	};
+
+	redeemEthHandler = (event) => {
+		if (event.target.value) {
+			this.setState({
+				redeemCEth_disabled: true,
+			});
+		} else {
+			this.setState({
+				redeemCEth_disabled: false,
+			});
+		}
+
+		if (
+			event.target.value > 0 &&
+			event.target.value <= this.state.balanceOfUnderlying
+		) {
+			redeemEthValue = event.target.value;
+			this.setState({ redeemEthButton: false });
+		} else {
+			this.setState({ redeemEthButton: true });
+		}
+	};
+
+	redeemETH = async () => {
+		const { cEth, address, web3 } = this.props.values;
+		if (redeemCEthValue) {
+			this.setState({ redeemLoading: true });
+			await cEth.methods.redeem(redeemCEthValue * 1e8).send({
+				from: address,
+				gasLimit: web3.utils.toHex(1500000),
+				gasPrice: web3.utils.toHex(20000000000),
+			});
+			await this.getBalances();
+			this.setState({ redeemLoading: false });
+		} else if (redeemEthValue) {
+			this.setState({ redeemLoading: true });
+			let ethAmount = web3.utils.toWei(redeemEthValue).toString();
+			await cEth.methods.redeemUnderlying(ethAmount).send({
+				from: address,
+				gasLimit: web3.utils.toHex(150000),
+				gasPrice: web3.utils.toHex(20000000000),
+			});
+			await this.getBalances();
+			this.setState({ redeemLoading: false });
 		}
 	};
 
@@ -220,31 +317,6 @@ class AppPage extends React.Component {
 		this.getBalances();
 	};
 
-	redeemETH = async () => {
-		console.log(`Redeeming 18 cETH..`);
-
-		const { cEth, address, web3 } = this.props.values;
-
-		const tokens = await cEth.methods.balanceOfUnderlying(address).call();
-
-		console.log('Exchanging all cETH based on cToken amount...');
-		await cEth.methods.redeem(tokens * 1e8).send({
-			from: address,
-			gasLimit: web3.utils.toHex(150000),
-			gasPrice: web3.utils.toHex(20000000000),
-		});
-
-		// console.log('Exchanging all cETH based on underlying ETH amount...');
-		// let ethAmount = web3.utils.toWei(balanceOfUnderlying).toString()
-		// await compoundCEthContract.methods.redeemUnderlying(ethAmount).send({
-		//   from: myWalletAddress,
-		//   gasLimit: web3.utils.toHex(150000),
-		//   gasPrice: web3.utils.toHex(20000000000),
-		// });
-
-		this.getBalances();
-	};
-
 	async componentDidMount() {
 		await this.getBalances();
 		await this.accountStat();
@@ -275,64 +347,25 @@ class AppPage extends React.Component {
 				)}
 
 				<div className='grid-container'>
-					<div className='grid-1'>
-						<p>Supply Ether</p>
-						<TextField
-							id='outlined-number'
-							label={`${this.state.eth_balance} ETH`}
-							type='number'
-							InputLabelProps={{
-								shrink: true,
-							}}
-							variant='outlined'
-							onChange={(event) => {
-								if (
-									event.target.value &&
-									event.target.value !== 0
-								) {
-									supplyEthValue = event.target.value;
-									this.setState({ supplyButton: false });
-								} else {
-									this.setState({ supplyButton: true });
-								}
-							}}
-						/>
-						<br></br>
-						<Button
-							variant='contained'
-							color='primary'
-							onClick={this.supplyETH}
-							disabled={this.state.supplyButton}
-						>
-							Supply
-						</Button>
-					</div>
-					<div className='grid-2'>
-						<p>Redeem Ether</p>
-						<TextField
-							id='outlined-number'
-							label={`${this.state.ceth_balance} cETH`}
-							type='number'
-							InputLabelProps={{
-								shrink: true,
-							}}
-							variant='outlined'
-						/>
-						<br></br>
-						<TextField
-							id='outlined-number'
-							label={`${this.state.balanceOfUnderlying} ETH`}
-							type='number'
-							InputLabelProps={{
-								shrink: true,
-							}}
-							variant='outlined'
-						/>
-						<br></br>
-						<Button variant='contained' color='primary'>
-							Redeem
-						</Button>
-					</div>
+					<Supply
+						supplyEthHandler={this.supplyEthHandler}
+						supplyETH={this.supplyETH}
+						eth_balance={this.state.eth_balance}
+						supplyButton={this.state.supplyButton}
+						supplyLoading={this.state.supplyLoading}
+					/>
+					<Redeem
+						ceth_balance={this.state.ceth_balance}
+						redeemCEth_disabled={this.state.redeemCEth_disabled}
+						balanceOfUnderlying={this.state.balanceOfUnderlying}
+						redeemEth_disabled={this.state.redeemEth_disabled}
+						redeemLoading={this.state.redeemLoading}
+						redeemEthButton={this.state.redeemEthButton}
+						redeemETH={this.redeemETH}
+						redeemEthHandler={this.redeemEthHandler}
+						redeemCEthHandler={this.redeemCEthHandler}
+					/>
+
 					<div className='grid-3'>
 						<p>Borrow Dai</p>
 						<TextField
