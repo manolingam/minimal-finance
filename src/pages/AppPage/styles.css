@@ -53,18 +53,14 @@
 .grid-container {
 	display: grid;
 	grid-template-areas:
-		'supply redeem'
-		'borrow repay';
+		'supply supply supply'
+		'redeem borrow repay';
 	grid-gap: 10px;
 	padding: 10px;
 }
 
 .grid-container p {
 	font-size: 1.3em;
-}
-
-.my-class-name {
-	position: absolute;
 }
 
 .MuiSnackbar-anchorOriginBottomCenter {

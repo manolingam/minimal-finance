@@ -118,7 +118,11 @@ class Redeem extends React.Component {
 						color='primary'
 						disabled={this.state.redeemEthButton}
 						onClick={async () => {
-							this.setState({ redeemEthButton: true });
+							this.setState({
+								redeemEthButton: true,
+								redeemCEth_disabled: false,
+								redeemEth_disabled: false,
+							});
 							await this.props.redeemETH(
 								redeemEthValue,
 								redeemCEthValue
