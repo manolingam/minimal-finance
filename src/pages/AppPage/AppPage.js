@@ -39,8 +39,10 @@ class AppPage extends React.Component {
 		super();
 		this.state = {
 			statsFetched: false,
+			marketEntered: false,
 			supplyLoading: false,
 			redeemLoading: false,
+			enterMarketLoading: false,
 			borrowLoading: false,
 			repayLoading: false,
 			successSnackbarOpen: false,
@@ -52,12 +54,50 @@ class AppPage extends React.Component {
 		this.setState({ successSnackbarOpen: false, failSnackbarOpen: false });
 	};
 
+	enterMarket = async () => {
+		this.setState({ enterMarketLoading: true });
+
+		const { comptroller, address, web3 } = this.props.values;
+		const cEthAddress = this.props.cEthAddress;
+
+		try {
+			console.log(
+				'\nEntering market (via Comptroller contract) for ETH (as collateral)...'
+			);
+
+			let markets = [cEthAddress];
+			await comptroller.methods.enterMarkets(markets).send({
+				from: address,
+				gasLimit: web3.utils.toHex(150000),
+				gasPrice: web3.utils.toHex(20000000000),
+			});
+
+			await this.getBalances();
+
+			this.setState({
+				marketEntered: true,
+				enterMarketLoading: false,
+				successSnackbarOpen: true,
+			});
+		} catch (err) {
+			this.setState({
+				failSnackbarOpen: true,
+				enterMarketLoading: false,
+			});
+		}
+	};
+
 	getBalances = async () => {
 		const { cEth, dai, comptroller, priceOracle } = this.props.values;
 		const cDaiAddress = this.props.cDaiAddress;
 
 		const web3 = this.props.values.web3;
 		const wallet_address = this.props.values.address;
+
+		// const markets = await comptroller.methods
+		// 	.getAssetsIn(wallet_address)
+		// 	.call();
+		// console.log(markets);
 
 		let eth_balance = +web3.utils.fromWei(
 			await web3.eth.getBalance(wallet_address)
@@ -94,6 +134,7 @@ class AppPage extends React.Component {
 			dai_balance,
 			balanceOfUnderlying,
 			borrowLimit,
+			marketEntered: liquidity === '0' ? false : true,
 		});
 	};
 
@@ -224,21 +265,9 @@ class AppPage extends React.Component {
 	borrowDai = async (daiToBorrow) => {
 		this.setState({ borrowLoading: true });
 
-		const { web3, address, cDai, comptroller } = this.props.values;
-		const cEthAddress = this.props.cEthAddress;
+		const { web3, address, cDai } = this.props.values;
 
 		try {
-			console.log(
-				'\nEntering market (via Comptroller contract) for ETH (as collateral)...'
-			);
-
-			let markets = [cEthAddress];
-			await comptroller.methods.enterMarkets(markets).send({
-				from: address,
-				gasLimit: web3.utils.toHex(150000),
-				gasPrice: web3.utils.toHex(20000000000),
-			});
-
 			console.log(`Now attempting to borrow ${daiToBorrow} DAI...`);
 
 			await cDai.methods
@@ -349,6 +378,9 @@ class AppPage extends React.Component {
 						borrowLimit={this.state.borrowLimit}
 						borrowDai={this.borrowDai}
 						borrowLoading={this.state.borrowLoading}
+						marketEntered={this.state.marketEntered}
+						enterMarketLoading={this.state.enterMarketLoading}
+						enterMarket={this.enterMarket}
 					/>
 					<Repay
 						dai_balance={this.state.dai_balance}
