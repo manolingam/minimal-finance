@@ -2,7 +2,9 @@ import React from 'react';
 
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Snackbar from '@material-ui/core/Snackbar';
+import MuiAlert from '@material-ui/lab/Alert';
+import { withStyles } from '@material-ui/core/styles';
 
 import '../../components/Supply/Supply';
 import '../../components/Redeem/Redeem';
@@ -11,23 +13,39 @@ import './styles.css';
 import Supply from '../../components/Supply/Supply';
 import Redeem from '../../components/Redeem/Redeem';
 
-let supplyEthValue;
-let redeemCEthValue;
-let redeemEthValue;
+const StyledSnackBar = withStyles({
+	root: {
+		position: 'initial',
+		zIndex: '1400',
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	anchorOriginBottomCenter: {
+		left: '50%',
+		right: 'auto',
+		bottom: '24px',
+		transform: 'none',
+	},
+})(Snackbar);
+
+function Alert(props) {
+	return <MuiAlert elevation={6} variant='filled' {...props} />;
+}
 
 class AppPage extends React.Component {
 	constructor() {
 		super();
 		this.state = {
 			statsFetched: false,
-			supplyButton: true,
 			supplyLoading: false,
-			redeemCEth_disabled: false,
-			redeemEth_disabled: false,
-			redeemEthButton: true,
 			redeemLoading: false,
+			snackbarOpen: false,
 		};
 	}
+
+	handleSnackBarClose = () => {
+		this.setState({ snackbarOpen: false });
+	};
 
 	getBalances = async () => {
 		const { cEth, dai } = this.props.values;
@@ -42,7 +60,7 @@ class AppPage extends React.Component {
 			(await cEth.methods.balanceOf(wallet_address).call()) / 1e8;
 		let dai_balance =
 			+(await dai.methods.balanceOf(wallet_address).call()) / 1e18;
-		//balance of underlying (ETH)
+
 		let _balanceOfUnderlying = await cEth.methods
 			.balanceOfUnderlying(wallet_address)
 			.call();
@@ -58,180 +76,136 @@ class AppPage extends React.Component {
 		});
 	};
 
-	accountStat = async () => {
-		const {
-			cEth,
-			address,
-			web3,
-			priceOracle,
-			cDai,
-			comptroller,
-		} = this.props.values;
+	// accountStat = async () => {
+	// 	const {
+	// 		cEth,
+	// 		address,
+	// 		web3,
+	// 		priceOracle,
+	// 		cDai,
+	// 		comptroller,
+	// 	} = this.props.values;
 
-		const cEthAddress = this.props.cEthAddress;
-		const cDaiAddress = this.props.cDaiAddress;
+	// 	const cEthAddress = this.props.cEthAddress;
+	// 	const cDaiAddress = this.props.cDaiAddress;
 
-		//exchange rate of cETH to ETH
-		let exchangeRateCurrent = await cEth.methods
-			.exchangeRateCurrent()
-			.call();
-		exchangeRateCurrent = (exchangeRateCurrent / 1e28).toString();
-		console.log(
-			'Current exchange rate from cETH to ETH:',
-			exchangeRateCurrent
-		);
+	// 	//exchange rate of cETH to ETH
+	// 	let exchangeRateCurrent = await cEth.methods
+	// 		.exchangeRateCurrent()
+	// 		.call();
+	// 	exchangeRateCurrent = (exchangeRateCurrent / 1e28).toString();
+	// 	console.log(
+	// 		'Current exchange rate from cETH to ETH:',
+	// 		exchangeRateCurrent
+	// 	);
 
-		console.log('Calculating your liquid assets in Compound...');
+	// 	console.log('Calculating your liquid assets in Compound...');
 
-		let { 1: liquidity } = await comptroller.methods
-			.getAccountLiquidity(address)
-			.call();
-		liquidity = web3.utils.fromWei(liquidity).toString();
+	// 	let { 1: liquidity } = await comptroller.methods
+	// 		.getAccountLiquidity(address)
+	// 		.call();
+	// 	liquidity = web3.utils.fromWei(liquidity).toString();
 
-		console.log('Fetching cETH collateral factor...');
+	// 	console.log('Fetching cETH collateral factor...');
 
-		let { 1: collateralFactor } = await comptroller.methods
-			.markets(cEthAddress)
-			.call();
-		collateralFactor = (collateralFactor / 1e18) * 100; // Convert to percent
+	// 	let { 1: collateralFactor } = await comptroller.methods
+	// 		.markets(cEthAddress)
+	// 		.call();
+	// 	collateralFactor = (collateralFactor / 1e18) * 100; // Convert to percent
 
-		console.log('Fetching DAI price from the price oracle...');
+	// 	console.log('Fetching DAI price from the price oracle...');
 
-		let daiPriceInEth = await priceOracle.methods
-			.getUnderlyingPrice(cDaiAddress)
-			.call();
-		daiPriceInEth = daiPriceInEth / 1e18;
+	// 	let daiPriceInEth = await priceOracle.methods
+	// 		.getUnderlyingPrice(cDaiAddress)
+	// 		.call();
+	// 	daiPriceInEth = daiPriceInEth / 1e18;
 
-		console.log('Fetching borrow rate per block for DAI borrowing...');
+	// 	console.log('Fetching borrow rate per block for DAI borrowing...');
 
-		let borrowRate = await cDai.methods.borrowRatePerBlock().call();
-		borrowRate = borrowRate / 1e18;
+	// 	let borrowRate = await cDai.methods.borrowRatePerBlock().call();
+	// 	borrowRate = borrowRate / 1e18;
 
-		daiPriceInEth = daiPriceInEth.toFixed(6);
+	// 	daiPriceInEth = daiPriceInEth.toFixed(6);
 
-		let borrowLimit = liquidity / daiPriceInEth;
+	// 	let borrowLimit = liquidity / daiPriceInEth;
 
-		console.log(
-			`\nYou have ${liquidity} of LIQUID assets (worth of ETH) pooled in Compound.`
-		);
-		console.log(
-			`You can borrow up to ${collateralFactor}% of your TOTAL assets supplied to Compound as DAI.`
-		);
-		console.log(`1 DAI == ${daiPriceInEth} ETH`);
-		console.log(`You can borrow up to ${borrowLimit} DAI from Compound.`);
-		console.log(
-			`NEVER borrow near the maximum amount because your account will be instantly liquidated.`
-		);
-		console.log(
-			`\nYour borrowed amount INCREASES (${borrowRate} * borrowed amount) DAI per block.\nThis is based on the current borrow rate.\n`
-		);
+	// 	console.log(
+	// 		`\nYou have ${liquidity} of LIQUID assets (worth of ETH) pooled in Compound.`
+	// 	);
+	// 	console.log(
+	// 		`You can borrow up to ${collateralFactor}% of your TOTAL assets supplied to Compound as DAI.`
+	// 	);
+	// 	console.log(`1 DAI == ${daiPriceInEth} ETH`);
+	// 	console.log(`You can borrow up to ${borrowLimit} DAI from Compound.`);
+	// 	console.log(
+	// 		`NEVER borrow near the maximum amount because your account will be instantly liquidated.`
+	// 	);
+	// 	console.log(
+	// 		`\nYour borrowed amount INCREASES (${borrowRate} * borrowed amount) DAI per block.\nThis is based on the current borrow rate.\n`
+	// 	);
 
-		this.setState({
-			exchangeRateCurrent,
-			liquidity,
-			collateralFactor,
-			daiPriceInEth,
-			borrowLimit,
-			statsFetched: true,
-		});
-	};
+	// 	this.setState({
+	// 		exchangeRateCurrent,
+	// 		liquidity,
+	// 		collateralFactor,
+	// 		daiPriceInEth,
+	// 		borrowLimit,
+	// 		statsFetched: true,
+	// 	});
+	// };
 
-	supplyEthHandler = (event) => {
-		if (
-			event.target.value &&
-			event.target.value > 0 &&
-			event.target.value <= this.state.eth_balance
-		) {
-			supplyEthValue = event.target.value;
-			this.setState({ supplyButton: false });
-		} else {
-			this.setState({ supplyButton: true });
-		}
-	};
-
-	supplyETH = async () => {
+	supplyETH = async (supplyEthValue) => {
 		if (supplyEthValue) {
 			this.setState({ supplyLoading: true });
 
 			const { cEth, address, web3 } = this.props.values;
 
-			await cEth.methods.mint().send({
-				from: address,
-				gasLimit: web3.utils.toHex(1500000),
-				gasPrice: web3.utils.toHex(20000000000),
-				value: web3.utils.toHex(
-					web3.utils.toWei(supplyEthValue, 'ether')
-				),
-			});
+			try {
+				await cEth.methods.mint().send({
+					from: address,
+					gasLimit: web3.utils.toHex(1500000),
+					gasPrice: web3.utils.toHex(20000000000),
+					value: web3.utils.toHex(
+						web3.utils.toWei(supplyEthValue, 'ether')
+					),
+				});
+			} catch (err) {
+				console.log(err);
+			}
 
 			await this.getBalances();
 
-			this.setState({ supplyLoading: false });
+			this.setState({ supplyLoading: false, snackbarOpen: true });
 		}
 	};
 
-	redeemCEthHandler = (event) => {
-		if (event.target.value) {
-			this.setState({ redeemEth_disabled: true });
-		} else {
-			this.setState({
-				redeemEth_disabled: false,
-			});
-		}
-
-		if (
-			event.target.value > 0 &&
-			event.target.value <= this.state.ceth_balance
-		) {
-			redeemCEthValue = event.target.value;
-			this.setState({ redeemEthButton: false });
-		} else {
-			this.setState({ redeemEthButton: true });
-		}
-	};
-
-	redeemEthHandler = (event) => {
-		if (event.target.value) {
-			this.setState({
-				redeemCEth_disabled: true,
-			});
-		} else {
-			this.setState({
-				redeemCEth_disabled: false,
-			});
-		}
-
-		if (
-			event.target.value > 0 &&
-			event.target.value <= this.state.balanceOfUnderlying
-		) {
-			redeemEthValue = event.target.value;
-			this.setState({ redeemEthButton: false });
-		} else {
-			this.setState({ redeemEthButton: true });
-		}
-	};
-
-	redeemETH = async () => {
+	redeemETH = async (redeemEthValue, redeemCEthValue) => {
 		const { cEth, address, web3 } = this.props.values;
+
 		if (redeemCEthValue) {
 			this.setState({ redeemLoading: true });
+
 			await cEth.methods.redeem(redeemCEthValue * 1e8).send({
 				from: address,
 				gasLimit: web3.utils.toHex(1500000),
 				gasPrice: web3.utils.toHex(20000000000),
 			});
+
 			await this.getBalances();
+
 			this.setState({ redeemLoading: false });
 		} else if (redeemEthValue) {
 			this.setState({ redeemLoading: true });
+
 			let ethAmount = web3.utils.toWei(redeemEthValue).toString();
 			await cEth.methods.redeemUnderlying(ethAmount).send({
 				from: address,
-				gasLimit: web3.utils.toHex(150000),
+				gasLimit: web3.utils.toHex(1500000),
 				gasPrice: web3.utils.toHex(20000000000),
 			});
+
 			await this.getBalances();
+
 			this.setState({ redeemLoading: false });
 		}
 	};
@@ -319,13 +293,13 @@ class AppPage extends React.Component {
 
 	async componentDidMount() {
 		await this.getBalances();
-		await this.accountStat();
+		// await this.accountStat();
 	}
 
 	render() {
 		return (
 			<div className='app-container'>
-				{this.state.statsFetched ? (
+				{/* {this.state.statsFetched ? (
 					<div className='account-stat'>
 						<p>
 							Your hold
@@ -344,14 +318,12 @@ class AppPage extends React.Component {
 					</div>
 				) : (
 					<CircularProgress />
-				)}
+				)} */}
 
 				<div className='grid-container'>
 					<Supply
-						supplyEthHandler={this.supplyEthHandler}
 						supplyETH={this.supplyETH}
 						eth_balance={this.state.eth_balance}
-						supplyButton={this.state.supplyButton}
 						supplyLoading={this.state.supplyLoading}
 					/>
 					<Redeem
@@ -398,6 +370,23 @@ class AppPage extends React.Component {
 							Repay
 						</Button>
 					</div>
+				</div>
+				<div
+					style={{
+						position: 'absolute',
+						bottom: '1em',
+						left: '1em',
+					}}
+				>
+					<StyledSnackBar
+						open={this.state.snackbarOpen}
+						autoHideDuration={6000}
+						onClose={this.handleSnackBarClose}
+					>
+						<Alert severity='success'>
+							This is a success message!
+						</Alert>
+					</StyledSnackBar>
 				</div>
 			</div>
 		);

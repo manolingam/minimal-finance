@@ -62,3 +62,13 @@
 .grid-container p {
 	font-size: 1.3em;
 }
+
+.my-class-name {
+	position: absolute;
+}
+
+.MuiSnackbar-anchorOriginBottomCenter {
+	left: 50%;
+	right: auto;
+	bottom: 24px;
+}
