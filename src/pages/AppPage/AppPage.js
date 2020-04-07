@@ -16,6 +16,7 @@ import Supply from '../../components/Supply/Supply';
 import Redeem from '../../components/Redeem/Redeem';
 import Borrow from '../../components/Borrow/Borrow';
 import Repay from '../../components/Repay/Repay';
+import Stats from '../../components/Stats/Stats';
 import { CircularProgress } from '@material-ui/core';
 
 const StyledSnackBar = withStyles({
@@ -40,7 +41,6 @@ class AppPage extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-			statsFetched: false,
 			marketEntered: false,
 			supplyLoading: false,
 			redeemLoading: false,
@@ -91,11 +91,23 @@ class AppPage extends React.Component {
 	};
 
 	getBalances = async () => {
-		const { cEth, dai, comptroller, priceOracle } = this.props.values;
+		const { cEth, cDai, dai, comptroller, priceOracle } = this.props.values;
 		const cDaiAddress = this.props.cDaiAddress;
 
 		const web3 = this.props.values.web3;
 		const wallet_address = this.state.address;
+
+		const supplyRatePerBlockMantissa = await cEth.methods
+			.supplyRatePerBlock()
+			.call();
+		const interestPerEthThisBlock = supplyRatePerBlockMantissa;
+		let supplyRate = web3.utils
+			.fromWei(interestPerEthThisBlock.toString())
+			.toString();
+		console.log(
+			`Each supplied ETH will increase by ${supplyRate}` +
+				` this block, based on the current interest rate.`
+		);
 
 		let eth_balance = +web3.utils.fromWei(
 			await web3.eth.getBalance(wallet_address)
@@ -116,6 +128,7 @@ class AppPage extends React.Component {
 			.getAccountLiquidity(wallet_address)
 			.call();
 		liquidity = web3.utils.fromWei(liquidity).toString();
+		console.log('Liquidity: ', liquidity);
 
 		let daiPriceInEth = await priceOracle.methods
 			.getUnderlyingPrice(cDaiAddress)
@@ -125,6 +138,12 @@ class AppPage extends React.Component {
 		daiPriceInEth = daiPriceInEth.toFixed(6);
 
 		let borrowLimit = liquidity / daiPriceInEth;
+		console.log('Borrow limit: ', borrowLimit);
+
+		let borrowBalance = await cDai.methods
+			.borrowBalanceCurrent(wallet_address)
+			.call();
+		borrowBalance = borrowBalance / 1e18;
 
 		this.setState({
 			eth_balance,
@@ -132,54 +151,8 @@ class AppPage extends React.Component {
 			dai_balance,
 			balanceOfUnderlying,
 			borrowLimit,
+			borrowBalance,
 			marketEntered: liquidity === '0' ? false : true,
-		});
-	};
-
-	accountStat = async () => {
-		const { cEth, cDai, comptroller } = this.props.values;
-
-		const cEthAddress = this.props.cEthAddress;
-
-		//exchange rate of cETH to ETH
-		let exchangeRateCurrent = await cEth.methods
-			.exchangeRateCurrent()
-			.call();
-		exchangeRateCurrent = (exchangeRateCurrent / 1e28).toString();
-		console.log(
-			'Current exchange rate from cETH to ETH:',
-			exchangeRateCurrent
-		);
-
-		console.log('Fetching cETH collateral factor...');
-
-		let { 1: collateralFactor } = await comptroller.methods
-			.markets(cEthAddress)
-			.call();
-		collateralFactor = (collateralFactor / 1e18) * 100; // Convert to percent
-
-		console.log('Fetching borrow rate per block for DAI borrowing...');
-
-		let borrowRate = await cDai.methods.borrowRatePerBlock().call();
-		borrowRate = borrowRate / 1e18;
-
-		console.log(
-			`You can borrow up to ${collateralFactor}% of your TOTAL assets supplied to Compound as DAI.`
-		);
-		// console.log(`1 DAI == ${daiPriceInEth} ETH`);
-		console.log(
-			`NEVER borrow near the maximum amount because your account will be instantly liquidated.`
-		);
-		console.log(
-			`\nYour borrowed amount INCREASES (${borrowRate} * borrowed amount) DAI per block.\nThis is based on the current borrow rate.\n`
-		);
-
-		this.setState({
-			exchangeRateCurrent,
-
-			collateralFactor,
-
-			statsFetched: true,
 		});
 	};
 
@@ -244,11 +217,15 @@ class AppPage extends React.Component {
 
 			try {
 				let ethAmount = web3.utils.toWei(redeemEthValue).toString();
-				await cEth.methods.redeemUnderlying(ethAmount).send({
-					from: address,
-					gasLimit: web3.utils.toHex(1500000),
-					gasPrice: web3.utils.toHex(20000000000),
-				});
+				let status = await cEth.methods
+					.redeemUnderlying(ethAmount)
+					.send({
+						from: address,
+						gasLimit: web3.utils.toHex(1500000),
+						gasPrice: web3.utils.toHex(20000000000),
+					});
+
+				console.log(status);
 
 				await this.getBalances();
 
@@ -373,6 +350,7 @@ class AppPage extends React.Component {
 
 		return (
 			<div className='app-container'>
+				<Stats />
 				{this.state.address ? (
 					<div className='nav-account'>
 						<img
@@ -410,7 +388,7 @@ class AppPage extends React.Component {
 						enterMarket={this.enterMarket}
 					/>
 					<Repay
-						dai_balance={this.state.dai_balance}
+						repayDai_balance={this.state.borrowBalance}
 						repayLoan={this.repayLoan}
 						repayLoading={this.state.repayLoading}
 					/>

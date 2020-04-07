@@ -2,8 +2,31 @@ import React from 'react';
 
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import { withStyles } from '@material-ui/core/styles';
 
 import './styles.css';
+
+const StyledTextField = withStyles({
+	root: {
+		'& label.Mui-focused': {
+			color: 'black',
+		},
+		'& .MuiOutlinedInput-root': {
+			'&.Mui-focused fieldset': {
+				borderColor: 'gray',
+			},
+		},
+	},
+})(TextField);
+
+const StyledButton = withStyles(() => ({
+	root: {
+		backgroundColor: '#39c5cc',
+		'&:hover': {
+			backgroundColor: '#39c5cc',
+		},
+	},
+}))(Button);
 
 let redeemCEthValue;
 let redeemEthValue;
@@ -71,7 +94,7 @@ class Redeem extends React.Component {
 		return (
 			<div className='grid-2'>
 				<p>Redeem Ether</p>
-				<TextField
+				<StyledTextField
 					id='outlined-number'
 					label={`${this.props.ceth_balance} cETH`}
 					type='number'
@@ -88,7 +111,7 @@ class Redeem extends React.Component {
 					onChange={this.redeemCEthHandler}
 				/>
 				<br></br>
-				<TextField
+				<StyledTextField
 					id='outlined-number'
 					label={`${this.props.balanceOfUnderlying} ETH`}
 					type='number'
@@ -113,9 +136,8 @@ class Redeem extends React.Component {
 						<div></div>
 					</div>
 				) : (
-					<Button
+					<StyledButton
 						variant='contained'
-						color='primary'
 						disabled={this.state.redeemEthButton}
 						onClick={async () => {
 							this.setState({
@@ -136,7 +158,7 @@ class Redeem extends React.Component {
 						}}
 					>
 						Redeem
-					</Button>
+					</StyledButton>
 				)}
 			</div>
 		);

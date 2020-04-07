@@ -9,7 +9,7 @@ class HomePage extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-			is_loaded: false
+			is_loaded: false,
 		};
 	}
 
@@ -48,7 +48,7 @@ class HomePage extends React.Component {
 				cDai_borrowRate,
 				cDai_tokens,
 				cDai_supplyRate,
-				is_loaded: true
+				is_loaded: true,
 			});
 		}
 	}
@@ -57,15 +57,33 @@ class HomePage extends React.Component {
 		const values = this.state;
 		return (
 			<div className='home-container'>
-				<p
+				<div
 					style={{
-						fontSize: '1.6em',
-						color: 'white',
-						maxWidth: '30%'
+						display: 'flex',
+						flexDirection: 'column',
+						alignItems: 'center',
+						justifyContent: 'center',
 					}}
 				>
-					Supply Ether, Borrow DAI, Repay DAI, Redeem Ether!
-				</p>
+					<p
+						style={{
+							textAlign: 'center',
+							fontSize: '1.8em',
+							color: 'black',
+							fontWeight: 'bold',
+						}}
+					>
+						Kovan DAI Loans
+					</p>
+					<p
+						style={{
+							fontSize: '1.6em',
+							maxWidth: '30%',
+						}}
+					>
+						Supply Ether, Borrow DAI, Repay DAI, Redeem Ether!
+					</p>
+				</div>
 				{this.props.networkID === 42 ? (
 					this.state.is_loaded ? (
 						<Home values={values} />

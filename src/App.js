@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import Web3 from 'web3';
 
 import Button from '@material-ui/core/Button';
+import { withStyles } from '@material-ui/core/styles';
 
 import HomePage from './pages/HomePage/HomePage';
 import AppPage from './pages/AppPage/AppPage';
@@ -18,6 +19,12 @@ const comptrollerAddress = '0x1f5d7f3caac149fe41b8bd62a3673fe6ec0ab73b';
 const comptrollerAbi = require('./abi/comptroller.json');
 const priceOracleAddress = '0x6998ed7daf969ea0950e01071aceeee54cccbab5';
 const priceOracleAbi = require('./abi/priceOracle.json');
+
+const StyledButton = withStyles({
+	label: {
+		color: 'black;',
+	},
+})(Button);
 
 class App extends React.Component {
 	constructor() {
@@ -79,49 +86,33 @@ class App extends React.Component {
 		return this.state.contracts_init ? (
 			<Router>
 				<nav className='nav'>
-					<p
-						style={{
-							textAlign: 'center',
-							fontSize: '1.8em',
-							color: 'white',
-							fontWeight: 'bold',
-						}}
-					>
-						Kovan DAI Loans
-					</p>
 					{this.state.address ? (
 						<div>
 							<Link to='/' className='nav-buttons'>
-								<Button
-									variant='contained'
-									color='primary'
+								<StyledButton
+									variant='outlined'
 									onClick={() => {
 										this.setState({ address: '' });
 									}}
 								>
 									Exit
-								</Button>
+								</StyledButton>
 							</Link>
 						</div>
 					) : this.state.networkID === 42 ? (
 						<Link to='/app' className='nav-buttons'>
-							<Button
-								variant='contained'
-								color='primary'
+							<StyledButton
+								variant='outlined'
 								onClick={this.connectAccount}
 							>
 								App
-							</Button>
+							</StyledButton>
 						</Link>
 					) : (
 						<div className='nav-buttons'>
-							<Button
-								variant='contained'
-								color='primary'
-								disabled
-							>
+							<StyledButton variant='outlined' disabled>
 								Switch to Kovan
-							</Button>
+							</StyledButton>
 						</div>
 					)}
 				</nav>

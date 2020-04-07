@@ -1,6 +1,29 @@
 import React from 'react';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import { withStyles } from '@material-ui/core/styles';
+
+const StyledTextField = withStyles({
+	root: {
+		'& label.Mui-focused': {
+			color: 'black',
+		},
+		'& .MuiOutlinedInput-root': {
+			'&.Mui-focused fieldset': {
+				borderColor: 'gray',
+			},
+		},
+	},
+})(TextField);
+
+const StyledButton = withStyles(() => ({
+	root: {
+		backgroundColor: '#39c5cc',
+		'&:hover': {
+			backgroundColor: '#39c5cc',
+		},
+	},
+}))(Button);
 
 let repayValue;
 
@@ -16,7 +39,7 @@ class Repay extends React.Component {
 		if (
 			event.target.value &&
 			event.target.value > 0 &&
-			event.target.value <= this.props.dai_balance
+			event.target.value <= this.props.repayDai_balance
 		) {
 			repayValue = event.target.value;
 			this.setState({
@@ -30,14 +53,14 @@ class Repay extends React.Component {
 	render() {
 		return (
 			<div className='grid-4'>
-				<p>Repay Loan</p>
-				<TextField
+				<p>Repay</p>
+				<StyledTextField
 					id='outlined-number'
-					label={`${this.props.dai_balance} DAI`}
+					label={`${this.props.repayDai_balance} Dai`}
 					type='number'
 					InputProps={{
 						inputProps: {
-							max: this.props.dai_balance,
+							max: this.props.repayDai_balance,
 						},
 					}}
 					InputLabelProps={{
@@ -55,9 +78,8 @@ class Repay extends React.Component {
 						<div></div>
 					</div>
 				) : (
-					<Button
+					<StyledButton
 						variant='contained'
-						color='primary'
 						onClick={async () => {
 							this.setState({ repayButton: true });
 							await this.props.repayLoan(repayValue);
@@ -68,7 +90,7 @@ class Repay extends React.Component {
 						disabled={this.state.repayButton}
 					>
 						Repay
-					</Button>
+					</StyledButton>
 				)}
 			</div>
 		);

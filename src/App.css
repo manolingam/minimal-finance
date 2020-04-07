@@ -4,21 +4,6 @@
 	font-family: 'Roboto Slab', serif;
 }
 
-.nav-account {
-	position: absolute;
-	top: 1em;
-	left: 1em;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	border-radius: 5px;
-	padding: 0 0.5em 0 0.5em;
-}
-
-.nav-account img {
-	margin-right: 10px;
-}
-
 .nav-buttons {
 	position: absolute;
 	top: 2em;
@@ -33,10 +18,6 @@ a {
 	font-family: 'Roboto Slab', serif;
 }
 
-.MuiButton-label {
-	color: white;
-}
-
 #address {
-	color: white;
+	color: black;
 }

@@ -1,6 +1,29 @@
 import React from 'react';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import { withStyles } from '@material-ui/core/styles';
+
+const StyledTextField = withStyles({
+	root: {
+		'& label.Mui-focused': {
+			color: 'black',
+		},
+		'& .MuiOutlinedInput-root': {
+			'&.Mui-focused fieldset': {
+				borderColor: 'gray',
+			},
+		},
+	},
+})(TextField);
+
+const StyledButton = withStyles(() => ({
+	root: {
+		backgroundColor: '#39c5cc',
+		'&:hover': {
+			backgroundColor: '#39c5cc',
+		},
+	},
+}))(Button);
 
 let borrowValue;
 
@@ -30,9 +53,9 @@ class Borrow extends React.Component {
 	render() {
 		return (
 			<div className='grid-3'>
-				<p>Borrow Dai</p>
+				<p>Borrow</p>
 				{this.props.marketEntered ? (
-					<TextField
+					<StyledTextField
 						id='outlined-number'
 						label={`${this.props.borrowLimit} Dai`}
 						type='number'
@@ -59,9 +82,8 @@ class Borrow extends React.Component {
 						<div></div>
 					</div>
 				) : this.props.marketEntered ? (
-					<Button
+					<StyledButton
 						variant='contained'
-						color='primary'
 						onClick={async () => {
 							this.setState({ borrowButton: true });
 							await this.props.borrowDai(borrowValue);
@@ -72,15 +94,14 @@ class Borrow extends React.Component {
 						disabled={this.state.borrowButton}
 					>
 						Borrow
-					</Button>
+					</StyledButton>
 				) : (
-					<Button
+					<StyledButton
 						variant='contained'
-						color='primary'
 						onClick={this.props.enterMarket}
 					>
 						Enter Market
-					</Button>
+					</StyledButton>
 				)}
 			</div>
 		);

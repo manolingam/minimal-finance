@@ -2,8 +2,31 @@ import React from 'react';
 
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
+import { withStyles } from '@material-ui/core/styles';
 
 import './styles.css';
+
+const StyledTextField = withStyles({
+	root: {
+		'& label.Mui-focused': {
+			color: 'black',
+		},
+		'& .MuiOutlinedInput-root': {
+			'&.Mui-focused fieldset': {
+				borderColor: 'gray',
+			},
+		},
+	},
+})(TextField);
+
+const StyledButton = withStyles(() => ({
+	root: {
+		backgroundColor: '#39c5cc',
+		'&:hover': {
+			backgroundColor: '#39c5cc',
+		},
+	},
+}))(Button);
 
 let supplyEthValue;
 class Supply extends React.Component {
@@ -33,7 +56,7 @@ class Supply extends React.Component {
 		return (
 			<div className='grid-1'>
 				<p>Supply Ether</p>
-				<TextField
+				<StyledTextField
 					id='outlined-number'
 					label={`${this.props.eth_balance} ETH`}
 					type='number'
@@ -57,9 +80,8 @@ class Supply extends React.Component {
 						<div></div>
 					</div>
 				) : (
-					<Button
+					<StyledButton
 						variant='contained'
-						color='primary'
 						onClick={async () => {
 							this.setState({ supplyButton: true });
 							await this.props.supplyETH(supplyEthValue);
@@ -70,7 +92,7 @@ class Supply extends React.Component {
 						disabled={this.state.supplyButton}
 					>
 						Supply
-					</Button>
+					</StyledButton>
 				)}
 			</div>
 		);
