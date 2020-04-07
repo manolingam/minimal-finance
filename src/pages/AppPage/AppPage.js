@@ -1,4 +1,6 @@
 import React from 'react';
+import { withRouter } from 'react-router-dom';
+import Identicon from 'identicon.js';
 
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
@@ -14,6 +16,7 @@ import Supply from '../../components/Supply/Supply';
 import Redeem from '../../components/Redeem/Redeem';
 import Borrow from '../../components/Borrow/Borrow';
 import Repay from '../../components/Repay/Repay';
+import { CircularProgress } from '@material-ui/core';
 
 const StyledSnackBar = withStyles({
 	root: {
@@ -33,7 +36,6 @@ const StyledSnackBar = withStyles({
 function Alert(props) {
 	return <MuiAlert elevation={6} variant='filled' {...props} />;
 }
-
 class AppPage extends React.Component {
 	constructor() {
 		super();
@@ -57,7 +59,8 @@ class AppPage extends React.Component {
 	enterMarket = async () => {
 		this.setState({ enterMarketLoading: true });
 
-		const { comptroller, address, web3 } = this.props.values;
+		const { comptroller, web3 } = this.props.values;
+		const address = this.state.address;
 		const cEthAddress = this.props.cEthAddress;
 
 		try {
@@ -92,12 +95,7 @@ class AppPage extends React.Component {
 		const cDaiAddress = this.props.cDaiAddress;
 
 		const web3 = this.props.values.web3;
-		const wallet_address = this.props.values.address;
-
-		// const markets = await comptroller.methods
-		// 	.getAssetsIn(wallet_address)
-		// 	.call();
-		// console.log(markets);
+		const wallet_address = this.state.address;
 
 		let eth_balance = +web3.utils.fromWei(
 			await web3.eth.getBalance(wallet_address)
@@ -189,7 +187,8 @@ class AppPage extends React.Component {
 		if (supplyEthValue) {
 			this.setState({ supplyLoading: true });
 
-			const { cEth, address, web3 } = this.props.values;
+			const { cEth, web3 } = this.props.values;
+			const address = this.state.address;
 
 			try {
 				await cEth.methods.mint().send({
@@ -216,7 +215,8 @@ class AppPage extends React.Component {
 	};
 
 	redeemETH = async (redeemEthValue, redeemCEthValue) => {
-		const { cEth, address, web3 } = this.props.values;
+		const { cEth, web3 } = this.props.values;
+		const address = this.state.address;
 
 		if (redeemCEthValue) {
 			this.setState({ redeemLoading: true });
@@ -265,7 +265,8 @@ class AppPage extends React.Component {
 	borrowDai = async (daiToBorrow) => {
 		this.setState({ borrowLoading: true });
 
-		const { web3, address, cDai } = this.props.values;
+		const { web3, cDai } = this.props.values;
+		const address = this.state.address;
 
 		try {
 			console.log(`Now attempting to borrow ${daiToBorrow} DAI...`);
@@ -304,7 +305,8 @@ class AppPage extends React.Component {
 	repayLoan = async (repayValue) => {
 		this.setState({ repayLoading: true });
 
-		const { dai, address, web3, cDai } = this.props.values;
+		const { dai, web3, cDai } = this.props.values;
+		const address = this.state.address;
 		const cDaiAddress = this.props.cDaiAddress;
 
 		console.log(`Now repaying the borrow...`);
@@ -354,13 +356,38 @@ class AppPage extends React.Component {
 	};
 
 	async componentDidMount() {
-		await this.getBalances();
-		// await this.accountStat();
+		this.setState({ address: this.props.values.address }, async () => {
+			await this.getBalances();
+		});
 	}
 
 	render() {
+		window.ethereum.on(
+			'accountsChanged',
+			async function (accounts) {
+				this.setState({ address: accounts[0] }, async () => {
+					this.getBalances();
+				});
+			}.bind(this)
+		);
+
 		return (
 			<div className='app-container'>
+				{this.state.address ? (
+					<div className='nav-account'>
+						<img
+							src={`data:image/png;base64,${new Identicon(
+								this.state.address,
+								30
+							).toString()}`}
+							alt='identicon'
+						></img>
+						<p id='address'>{this.state.address}</p>
+					</div>
+				) : (
+					<CircularProgress />
+				)}
+
 				<div className='grid-container'>
 					<Supply
 						supplyETH={this.supplyETH}
@@ -417,4 +444,4 @@ class AppPage extends React.Component {
 	}
 }
 
-export default AppPage;
+export default withRouter(AppPage);

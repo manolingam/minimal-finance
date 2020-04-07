@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import Web3 from 'web3';
 
 import Button from '@material-ui/core/Button';
-import Identicon from 'identicon.js';
 
 import HomePage from './pages/HomePage/HomePage';
 import AppPage from './pages/AppPage/AppPage';
@@ -103,16 +102,6 @@ class App extends React.Component {
 									Exit
 								</Button>
 							</Link>
-							<div className='nav-account'>
-								<img
-									src={`data:image/png;base64,${new Identicon(
-										this.state.address,
-										30
-									).toString()}`}
-									alt='identicon'
-								></img>
-								<p id='address'>{this.state.address}</p>
-							</div>
 						</div>
 					) : this.state.networkID === 42 ? (
 						<Link to='/app' className='nav-buttons'>
