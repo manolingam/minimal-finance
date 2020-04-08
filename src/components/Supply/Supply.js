@@ -21,9 +21,10 @@ const StyledTextField = withStyles({
 
 const StyledButton = withStyles(() => ({
 	root: {
-		backgroundColor: '#39c5cc',
+		backgroundColor: '#00d395',
+		color: 'white',
 		'&:hover': {
-			backgroundColor: '#39c5cc',
+			backgroundColor: '#00d395',
 		},
 	},
 }))(Button);
@@ -55,7 +56,7 @@ class Supply extends React.Component {
 	render() {
 		return (
 			<div className='grid-1'>
-				<p>Supply Ether</p>
+				<p>Supply</p>
 				<StyledTextField
 					id='outlined-number'
 					label={`${this.props.eth_balance} ETH`}

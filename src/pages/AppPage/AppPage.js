@@ -93,43 +93,57 @@ class AppPage extends React.Component {
 	getBalances = async () => {
 		const { cEth, cDai, dai, comptroller, priceOracle } = this.props.values;
 		const cDaiAddress = this.props.cDaiAddress;
+		const cEthAddress = this.props.cEthAddress;
 
 		const web3 = this.props.values.web3;
 		const wallet_address = this.state.address;
 
-		const supplyRatePerBlockMantissa = await cEth.methods
-			.supplyRatePerBlock()
-			.call();
-		const interestPerEthThisBlock = supplyRatePerBlockMantissa;
-		let supplyRate = web3.utils
-			.fromWei(interestPerEthThisBlock.toString())
-			.toString();
-		console.log(
-			`Each supplied ETH will increase by ${supplyRate}` +
-				` this block, based on the current interest rate.`
-		);
-
+		// ether balance of the user's wallet
 		let eth_balance = +web3.utils.fromWei(
 			await web3.eth.getBalance(wallet_address)
 		);
+
+		// ceth balance of the user's wallet
 		let ceth_balance =
 			(await cEth.methods.balanceOf(wallet_address).call()) / 1e8;
+
+		// dai balance of the user's wallet
 		let dai_balance =
 			+(await dai.methods.balanceOf(wallet_address).call()) / 1e18;
 
+		// exchange rate for ceth to eth
+		// let exchangeRate =
+		// 	(await cEth.methods.exchangeRateCurrent().call()) / 1e28;
+
+		// underlying eth balance in compound
 		let _balanceOfUnderlying = await cEth.methods
 			.balanceOfUnderlying(wallet_address)
 			.call();
+		let temp = _balanceOfUnderlying;
+
 		let balanceOfUnderlying = web3.utils
 			.fromWei(_balanceOfUnderlying)
 			.toString();
 
+		// available liquidity in ether
 		let { 1: liquidity } = await comptroller.methods
 			.getAccountLiquidity(wallet_address)
 			.call();
 		liquidity = web3.utils.fromWei(liquidity).toString();
 		console.log('Liquidity: ', liquidity);
 
+		//collateral factor for eth
+		let { 1: collateralFactor } = await comptroller.methods
+			.markets(cEthAddress)
+			.call();
+
+		console.log('Raw Redeem: ', temp / collateralFactor);
+
+		console.log('Qunatiy for redeem: ', balanceOfUnderlying / 0.75);
+
+		console.log('balUnder * 0.75: ', balanceOfUnderlying * 0.75);
+
+		// dai price in eth
 		let daiPriceInEth = await priceOracle.methods
 			.getUnderlyingPrice(cDaiAddress)
 			.call();
@@ -137,9 +151,11 @@ class AppPage extends React.Component {
 
 		daiPriceInEth = daiPriceInEth.toFixed(6);
 
+		// available dai for borrowing
 		let borrowLimit = liquidity / daiPriceInEth;
 		console.log('Borrow limit: ', borrowLimit);
 
+		// pending dai balance that needs to be repaid
 		let borrowBalance = await cDai.methods
 			.borrowBalanceCurrent(wallet_address)
 			.call();
@@ -187,55 +203,35 @@ class AppPage extends React.Component {
 		}
 	};
 
-	redeemETH = async (redeemEthValue, redeemCEthValue) => {
+	redeemETH = async (redeemEthValue) => {
 		const { cEth, web3 } = this.props.values;
 		const address = this.state.address;
 
-		if (redeemCEthValue) {
-			this.setState({ redeemLoading: true });
+		this.setState({ redeemLoading: true });
 
-			try {
-				await cEth.methods.redeem(redeemCEthValue * 1e8).send({
-					from: address,
-					gasLimit: web3.utils.toHex(1500000),
-					gasPrice: web3.utils.toHex(20000000000),
-				});
+		redeemEthValue = web3.utils.toWei(redeemEthValue, 'ether');
 
-				await this.getBalances();
+		console.log('Redeem value: ', redeemEthValue);
 
-				this.setState({
-					redeemLoading: false,
-					successSnackbarOpen: true,
-				});
-			} catch (err) {
-				await this.getBalances();
+		try {
+			let res = await cEth.methods.redeemUnderlying(redeemEthValue).send({
+				from: address,
+				gasLimit: web3.utils.toHex(1500000),
+				gasPrice: web3.utils.toHex(20000000000),
+			});
 
-				this.setState({ redeemLoading: false, failSnackbarOpen: true });
-			}
-		} else if (redeemEthValue) {
-			this.setState({ redeemLoading: true });
+			console.log('Message: ', res);
 
-			try {
-				let ethAmount = web3.utils.toWei(redeemEthValue).toString();
-				let status = await cEth.methods
-					.redeemUnderlying(ethAmount)
-					.send({
-						from: address,
-						gasLimit: web3.utils.toHex(1500000),
-						gasPrice: web3.utils.toHex(20000000000),
-					});
+			await this.getBalances();
 
-				console.log(status);
+			this.setState({
+				redeemLoading: false,
+				successSnackbarOpen: true,
+			});
+		} catch (err) {
+			await this.getBalances();
 
-				await this.getBalances();
-
-				this.setState({
-					redeemLoading: false,
-					successSnackbarOpen: true,
-				});
-			} catch (err) {
-				this.setState({ redeemLoading: false, failSnackbarOpen: true });
-			}
+			this.setState({ redeemLoading: false, failSnackbarOpen: true });
 		}
 	};
 
@@ -350,17 +346,23 @@ class AppPage extends React.Component {
 
 		return (
 			<div className='app-container'>
-				<Stats />
 				{this.state.address ? (
-					<div className='nav-account'>
-						<img
-							src={`data:image/png;base64,${new Identicon(
-								this.state.address,
-								30
-							).toString()}`}
-							alt='identicon'
-						></img>
-						<p id='address'>{this.state.address}</p>
+					<div>
+						<Stats
+							cEth={this.props.values.cEth}
+							address={this.state.address}
+							web3={this.props.values.web3}
+						/>
+						<div className='nav-account'>
+							<img
+								src={`data:image/png;base64,${new Identicon(
+									this.state.address,
+									30
+								).toString()}`}
+								alt='identicon'
+							></img>
+							<p id='address'>{this.state.address}</p>
+						</div>
 					</div>
 				) : (
 					<CircularProgress />
@@ -373,7 +375,6 @@ class AppPage extends React.Component {
 						supplyLoading={this.state.supplyLoading}
 					/>
 					<Redeem
-						ceth_balance={this.state.ceth_balance}
 						balanceOfUnderlying={this.state.balanceOfUnderlying}
 						redeemLoading={this.state.redeemLoading}
 						redeemETH={this.redeemETH}

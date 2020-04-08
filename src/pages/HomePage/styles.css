@@ -9,3 +9,41 @@
 	justify-content: space-around;
 	font-family: 'Roboto Slab', serif;
 }
+
+.eth {
+	position: absolute;
+	height: 200px;
+	width: auto;
+	top: 3em;
+	left: 2em;
+}
+
+.dai {
+	position: absolute;
+	height: 100px;
+	width: auto;
+	bottom: 3em;
+	right: 2em;
+}
+
+.dai,
+.eth {
+	animation-name: floating;
+	animation-duration: 3s;
+	animation-iteration-count: infinite;
+	animation-timing-function: ease-in-out;
+	margin-left: 30px;
+	margin-top: 5px;
+}
+
+@keyframes floating {
+	from {
+		transform: translate(0, 0px);
+	}
+	65% {
+		transform: translate(0, 15px);
+	}
+	to {
+		transform: translate(0, -0px);
+	}
+}

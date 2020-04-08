@@ -18,9 +18,10 @@ const StyledTextField = withStyles({
 
 const StyledButton = withStyles(() => ({
 	root: {
-		backgroundColor: '#39c5cc',
+		backgroundColor: '#00d395',
+		color: 'white',
 		'&:hover': {
-			backgroundColor: '#39c5cc',
+			backgroundColor: '#00d395',
 		},
 	},
 }))(Button);

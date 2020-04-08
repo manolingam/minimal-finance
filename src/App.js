@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import Web3 from 'web3';
+import 'animate.css';
 
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
@@ -124,6 +125,7 @@ class App extends React.Component {
 					/>
 				</Route>
 				<Route exact path='/app'>
+					{console.log(this.state.address)}
 					{this.state.address ? (
 						<AppPage
 							values={values}
@@ -131,12 +133,16 @@ class App extends React.Component {
 							cDaiAddress={cDaiAddress}
 						/>
 					) : (
-						<div>Loading..</div>
+						<div className='unauthorized'>
+							<p className='animated flash'>
+								Unauthorized route!
+							</p>
+						</div>
 					)}
 				</Route>
 			</Router>
 		) : (
-			<div>Loading...</div>
+			<div></div>
 		);
 	}
 }

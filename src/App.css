@@ -14,6 +14,19 @@ a {
 	text-decoration: none;
 }
 
+.unauthorized {
+	height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-family: 'Roboto Slab', serif;
+}
+
+.unauthorized p {
+	font-size: 2em;
+	color: #00d395;
+}
+
 .MuiButton-label {
 	font-family: 'Roboto Slab', serif;
 }

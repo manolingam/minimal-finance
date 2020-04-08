@@ -21,71 +21,31 @@ const StyledTextField = withStyles({
 
 const StyledButton = withStyles(() => ({
 	root: {
-		backgroundColor: '#39c5cc',
+		backgroundColor: '#00d395',
+		color: 'white',
 		'&:hover': {
-			backgroundColor: '#39c5cc',
+			backgroundColor: '#00d395',
 		},
 	},
 }))(Button);
 
-let redeemCEthValue;
 let redeemEthValue;
 class Redeem extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-			redeemCEth_disabled: false,
-			redeemEth_disabled: false,
 			redeemEthButton: true,
 		};
 	}
 
-	redeemCEthHandler = (event) => {
-		if (event.target.value) {
-			this.setState({ redeemEth_disabled: true });
-		} else {
-			this.setState({
-				redeemEth_disabled: false,
-			});
-		}
-
-		if (
-			event.target.value > 0 &&
-			event.target.value <= this.props.ceth_balance
-		) {
-			redeemCEthValue = event.target.value;
-			redeemEthValue = '';
-			this.setState({
-				redeemEthButton: false,
-			});
-		} else {
-			redeemEthValue = '';
-			this.setState({ redeemEthButton: true });
-		}
-	};
-
 	redeemEthHandler = (event) => {
-		if (event.target.value) {
-			this.setState({
-				redeemCEth_disabled: true,
-			});
-		} else {
-			this.setState({
-				redeemCEth_disabled: false,
-			});
-		}
-
 		if (
 			event.target.value > 0 &&
 			event.target.value <= this.props.balanceOfUnderlying
 		) {
 			redeemEthValue = event.target.value;
-			redeemCEthValue = '';
-			this.setState({
-				redeemEthButton: false,
-			});
+			this.setState({ redeemEthButton: false });
 		} else {
-			redeemCEthValue = '';
 			this.setState({ redeemEthButton: true });
 		}
 	};
@@ -93,24 +53,7 @@ class Redeem extends React.Component {
 	render() {
 		return (
 			<div className='grid-2'>
-				<p>Redeem Ether</p>
-				<StyledTextField
-					id='outlined-number'
-					label={`${this.props.ceth_balance} cETH`}
-					type='number'
-					InputProps={{
-						inputProps: {
-							max: this.props.ceth_balance,
-						},
-					}}
-					disabled={this.state.redeemCEth_disabled}
-					InputLabelProps={{
-						shrink: true,
-					}}
-					variant='outlined'
-					onChange={this.redeemCEthHandler}
-				/>
-				<br></br>
+				<p>Redeem</p>
 				<StyledTextField
 					id='outlined-number'
 					label={`${this.props.balanceOfUnderlying} ETH`}
@@ -120,7 +63,6 @@ class Redeem extends React.Component {
 							max: this.props.balanceOfUnderlying,
 						},
 					}}
-					disabled={this.state.redeemEth_disabled}
 					InputLabelProps={{
 						shrink: true,
 					}}
@@ -142,19 +84,11 @@ class Redeem extends React.Component {
 						onClick={async () => {
 							this.setState({
 								redeemEthButton: true,
-								redeemCEth_disabled: false,
-								redeemEth_disabled: false,
 							});
-							await this.props.redeemETH(
-								redeemEthValue,
-								redeemCEthValue
-							);
-							document.querySelectorAll(
+							await this.props.redeemETH(redeemEthValue);
+							document.querySelector(
 								'.grid-2 #outlined-number'
-							)[0].value = '';
-							document.querySelectorAll(
-								'.grid-2 #outlined-number'
-							)[1].value = '';
+							).value = '';
 						}}
 					>
 						Redeem
