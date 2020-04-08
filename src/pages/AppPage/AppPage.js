@@ -173,6 +173,11 @@ class AppPage extends React.Component {
 
 		console.log('liquidty * 0.75', liquidity * 0.75);
 
+		let ethForReedem =
+			balanceOfUnderlying - (borrowBalance * daiPriceInEth) / 0.75;
+
+		console.log('Eth that can be redeemed: ', ethForReedem);
+
 		this.setState({
 			eth_balance,
 			ceth_balance,
