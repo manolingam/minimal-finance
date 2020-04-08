@@ -1,6 +1,6 @@
 import React from 'react';
 
-import 'animate.css';
+import Skeleton from '@material-ui/lab/Skeleton';
 
 import Eth from '../../assets/eth.svg';
 
@@ -42,7 +42,28 @@ class Stats extends React.Component {
 					src={Eth}
 					alt='floating'
 				></img>
-				<p id='underlyingBalance'>{this.state.balanceOfUnderlying}</p>
+				<p id='underlyingBalance'>
+					{this.state.balanceOfUnderlying ? (
+						this.state.balanceOfUnderlying
+					) : (
+						<Skeleton animation='wave' width={350} height={50} />
+					)}
+					<br></br>
+					<span style={{ fontSize: '0.5em' }}>
+						{' '}
+						(Supplied Balance)
+					</span>
+				</p>
+				<p id='underlyingBalance'>
+					{this.props.borrowBalanceInEth ||
+					this.props.borrowBalanceInEth === 0 ? (
+						this.props.borrowBalanceInEth
+					) : (
+						<Skeleton animation='wave' width={350} height={50} />
+					)}
+					<br></br>
+					<span style={{ fontSize: '0.5em' }}> (Borrow Balance)</span>
+				</p>
 			</div>
 		);
 	}

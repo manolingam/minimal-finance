@@ -53,7 +53,6 @@ class Redeem extends React.Component {
 	render() {
 		return (
 			<div className='grid-2'>
-				<p>Redeem</p>
 				<StyledTextField
 					id='outlined-number'
 					label={`${this.props.balanceOfUnderlying} ETH`}

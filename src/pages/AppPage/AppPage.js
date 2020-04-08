@@ -4,6 +4,8 @@ import Identicon from 'identicon.js';
 
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
+import Button from '@material-ui/core/Button';
+import Skeleton from '@material-ui/lab/Skeleton';
 import { withStyles } from '@material-ui/core/styles';
 
 import '../../components/Supply/Supply';
@@ -18,6 +20,16 @@ import Borrow from '../../components/Borrow/Borrow';
 import Repay from '../../components/Repay/Repay';
 import Stats from '../../components/Stats/Stats';
 import { CircularProgress } from '@material-ui/core';
+
+const StyledButton = withStyles(() => ({
+	root: {
+		backgroundColor: 'hotpink',
+		color: 'white',
+		'&:hover': {
+			backgroundColor: 'hotpink',
+		},
+	},
+}))(Button);
 
 const StyledSnackBar = withStyles({
 	root: {
@@ -154,15 +166,12 @@ class AppPage extends React.Component {
 		let borrowBalance = await cDai.methods
 			.borrowBalanceCurrent(wallet_address)
 			.call();
+
 		borrowBalance = borrowBalance / 1e18;
 
+		console.log('Borrow Balance: ', borrowBalance * daiPriceInEth);
+
 		console.log('liquidty * 0.75', liquidity * 0.75);
-		console.log(
-			'supply- borrow',
-			web3.utils.fromWei(
-				(_balanceOfUnderlying - borrowBalance).toString()
-			)
-		);
 
 		this.setState({
 			eth_balance,
@@ -172,6 +181,7 @@ class AppPage extends React.Component {
 			borrowLimit,
 			borrowBalance,
 			liquidity,
+			borrowBalanceInEth: borrowBalance * daiPriceInEth,
 			borrowLimitInEth: balanceOfUnderlying * 0.75,
 			marketEntered: liquidity === '0' ? false : true,
 		});
@@ -361,6 +371,7 @@ class AppPage extends React.Component {
 							cEth={this.props.values.cEth}
 							address={this.state.address}
 							web3={this.props.values.web3}
+							borrowBalanceInEth={this.state.borrowBalanceInEth}
 						/>
 						<div className='nav-account'>
 							<img
@@ -385,37 +396,74 @@ class AppPage extends React.Component {
 							style={{ width: `${borrowLimitPercent}%` }}
 						></div>
 					</div>
-					<p id='bar-num'>{this.state.borrowLimitInEth}</p>
+					<p id='bar-num'>
+						{this.state.borrowLimitInEth ? (
+							this.state.borrowLimitInEth
+						) : (
+							<Skeleton
+								animation='wave'
+								width={100}
+								height={30}
+							/>
+						)}
+					</p>
 				</div>
 
 				<div className='flex-container'>
-					<div className='supply-container'>
-						<Supply
-							supplyETH={this.supplyETH}
-							eth_balance={this.state.eth_balance}
-							supplyLoading={this.state.supplyLoading}
-						/>
-						<Redeem
-							balanceOfUnderlying={this.state.balanceOfUnderlying}
-							redeemLoading={this.state.redeemLoading}
-							redeemETH={this.redeemETH}
-						/>
-					</div>
-					<div className='borrow-container'>
-						<Borrow
-							borrowLimit={this.state.borrowLimit}
-							borrowDai={this.borrowDai}
-							borrowLoading={this.state.borrowLoading}
-							marketEntered={this.state.marketEntered}
-							enterMarketLoading={this.state.enterMarketLoading}
-							enterMarket={this.enterMarket}
-						/>
-						<Repay
-							repayDai_balance={this.state.borrowBalance}
-							repayLoan={this.repayLoan}
-							repayLoading={this.state.repayLoading}
-						/>
-					</div>
+					{this.state.eth_balance ? (
+						<div className='supply-container'>
+							<Supply
+								supplyETH={this.supplyETH}
+								eth_balance={this.state.eth_balance}
+								supplyLoading={this.state.supplyLoading}
+							/>
+							<Redeem
+								balanceOfUnderlying={
+									this.state.balanceOfUnderlying
+								}
+								redeemLoading={this.state.redeemLoading}
+								redeemETH={this.redeemETH}
+							/>
+						</div>
+					) : (
+						<Skeleton variant='rect' width={310} height={118} />
+					)}
+					{this.state.eth_balance ? (
+						this.state.marketEntered ? (
+							<div className='borrow-container'>
+								<Borrow
+									borrowLimit={this.state.borrowLimit}
+									borrowDai={this.borrowDai}
+									borrowLoading={this.state.borrowLoading}
+								/>
+								<Repay
+									repayDai_balance={this.state.borrowBalance}
+									repayLoan={this.repayLoan}
+									repayLoading={this.state.repayLoading}
+								/>
+							</div>
+						) : this.state.enterMarketLoading ? (
+							<div className='borrow-container'>
+								<div className='lds-ellipsis'>
+									<div></div>
+									<div></div>
+									<div></div>
+									<div></div>
+								</div>
+							</div>
+						) : (
+							<div className='borrow-container'>
+								<StyledButton
+									variant='contained'
+									onClick={this.enterMarket}
+								>
+									Enter Market
+								</StyledButton>
+							</div>
+						)
+					) : (
+						<Skeleton variant='rect' width={310} height={118} />
+					)}
 				</div>
 				<div
 					style={{

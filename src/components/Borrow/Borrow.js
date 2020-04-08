@@ -56,35 +56,32 @@ class Borrow extends React.Component {
 	render() {
 		return (
 			<div className='grid-3'>
-				<p>Borrow</p>
-				{this.props.marketEntered ? (
-					<StyledTextField
-						id='outlined-number'
-						label={`${this.props.borrowLimit} Dai`}
-						type='number'
-						InputProps={{
-							inputProps: {
-								max: this.props.borrowLimit,
-							},
-						}}
-						InputLabelProps={{
-							shrink: true,
-						}}
-						variant='outlined'
-						onChange={this.borrowDaiHandler}
-					/>
-				) : null}
+				<StyledTextField
+					id='outlined-number'
+					label={`${this.props.borrowLimit} Dai`}
+					type='number'
+					InputProps={{
+						inputProps: {
+							max: this.props.borrowLimit,
+						},
+					}}
+					InputLabelProps={{
+						shrink: true,
+					}}
+					variant='outlined'
+					onChange={this.borrowDaiHandler}
+				/>
 
 				<br></br>
 
-				{this.props.borrowLoading || this.props.enterMarketLoading ? (
+				{this.props.borrowLoading ? (
 					<div className='lds-ellipsis'>
 						<div></div>
 						<div></div>
 						<div></div>
 						<div></div>
 					</div>
-				) : this.props.marketEntered ? (
+				) : (
 					<StyledButton
 						variant='contained'
 						onClick={async () => {
@@ -97,13 +94,6 @@ class Borrow extends React.Component {
 						disabled={this.state.borrowButton}
 					>
 						Borrow
-					</StyledButton>
-				) : (
-					<StyledButton
-						variant='contained'
-						onClick={this.props.enterMarket}
-					>
-						Enter Market
 					</StyledButton>
 				)}
 			</div>

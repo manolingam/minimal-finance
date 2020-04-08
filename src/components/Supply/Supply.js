@@ -56,7 +56,6 @@ class Supply extends React.Component {
 	render() {
 		return (
 			<div className='grid-1'>
-				<p>Supply</p>
 				<StyledTextField
 					id='outlined-number'
 					label={`${this.props.eth_balance} ETH`}

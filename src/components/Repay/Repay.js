@@ -56,7 +56,6 @@ class Repay extends React.Component {
 	render() {
 		return (
 			<div className='grid-4'>
-				<p>Repay</p>
 				<StyledTextField
 					id='outlined-number'
 					label={`${this.props.repayDai_balance} Dai`}
