@@ -186,6 +186,7 @@ class AppPage extends React.Component {
 			borrowLimit,
 			borrowBalance,
 			liquidity,
+			ethForReedem,
 			borrowBalanceInEth: borrowBalance * daiPriceInEth,
 			borrowLimitInEth: balanceOfUnderlying * 0.75,
 			marketEntered: liquidity === '0' ? false : true,
@@ -215,7 +216,6 @@ class AppPage extends React.Component {
 					successSnackbarOpen: true,
 				});
 			} catch (err) {
-				console.log(err);
 				await this.getBalances();
 
 				this.setState({ supplyLoading: false, failSnackbarOpen: true });
@@ -281,13 +281,14 @@ class AppPage extends React.Component {
 
 			console.log(`Borrow balance is ${balance} DAI`);
 
+			await this.getBalances();
+
 			this.setState({
 				borrowLoading: false,
 				successSnackbarOpen: true,
 			});
-
-			this.getBalances();
 		} catch (err) {
+			await this.getBalances();
 			this.setState({
 				borrowLoading: false,
 				failSnackbarOpen: true,
@@ -333,14 +334,16 @@ class AppPage extends React.Component {
 				process.exit(12);
 			}
 
+			console.log(`\nBorrow repaid.\n`);
+
+			await this.getBalances();
+
 			this.setState({
 				repayLoading: false,
 				successSnackbarOpen: true,
 			});
-			console.log(`\nBorrow repaid.\n`);
-
-			this.getBalances();
 		} catch (err) {
+			await this.getBalances();
 			this.setState({
 				repayLoading: false,
 				failSnackbarOpen: true,
@@ -393,26 +396,20 @@ class AppPage extends React.Component {
 					<CircularProgress />
 				)}
 
-				<div className='borrow-limit'>
-					<p id='bar-title'>Borrow Limit</p>
-					<div className='borrow-bar'>
-						<div
-							id='borrow-filled'
-							style={{ width: `${borrowLimitPercent}%` }}
-						></div>
+				{this.state.borrowLimitInEth ? (
+					<div className='borrow-limit'>
+						<p id='bar-title'>Borrow Limit</p>
+						<div className='borrow-bar'>
+							<div
+								id='borrow-filled'
+								style={{ width: `${borrowLimitPercent}%` }}
+							></div>
+						</div>
+						<p id='bar-num'>{this.state.borrowLimitInEth}</p>
 					</div>
-					<p id='bar-num'>
-						{this.state.borrowLimitInEth ? (
-							this.state.borrowLimitInEth
-						) : (
-							<Skeleton
-								animation='wave'
-								width={100}
-								height={30}
-							/>
-						)}
-					</p>
-				</div>
+				) : (
+					<Skeleton animation='wave' width={400} height={30} />
+				)}
 
 				<div className='flex-container'>
 					{this.state.eth_balance ? (
@@ -423,9 +420,7 @@ class AppPage extends React.Component {
 								supplyLoading={this.state.supplyLoading}
 							/>
 							<Redeem
-								balanceOfUnderlying={
-									this.state.balanceOfUnderlying
-								}
+								ethForReedem={this.state.ethForReedem}
 								redeemLoading={this.state.redeemLoading}
 								redeemETH={this.redeemETH}
 							/>

@@ -41,7 +41,7 @@ class Redeem extends React.Component {
 	redeemEthHandler = (event) => {
 		if (
 			event.target.value > 0 &&
-			event.target.value <= this.props.balanceOfUnderlying
+			event.target.value <= this.props.ethForReedem
 		) {
 			redeemEthValue = event.target.value;
 			this.setState({ redeemEthButton: false });
@@ -55,11 +55,11 @@ class Redeem extends React.Component {
 			<div className='grid-2'>
 				<StyledTextField
 					id='outlined-number'
-					label={`${this.props.balanceOfUnderlying} ETH`}
+					label={`${this.props.ethForReedem} ETH`}
 					type='number'
 					InputProps={{
 						inputProps: {
-							max: this.props.balanceOfUnderlying,
+							max: this.props.ethForReedem,
 						},
 					}}
 					InputLabelProps={{
