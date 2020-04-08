@@ -125,7 +125,6 @@ class App extends React.Component {
 					/>
 				</Route>
 				<Route exact path='/app'>
-					{console.log(this.state.address)}
 					{this.state.address ? (
 						<AppPage
 							values={values}

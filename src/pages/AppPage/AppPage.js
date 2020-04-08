@@ -119,7 +119,6 @@ class AppPage extends React.Component {
 		let _balanceOfUnderlying = await cEth.methods
 			.balanceOfUnderlying(wallet_address)
 			.call();
-		let temp = _balanceOfUnderlying;
 
 		let balanceOfUnderlying = web3.utils
 			.fromWei(_balanceOfUnderlying)
@@ -136,10 +135,6 @@ class AppPage extends React.Component {
 		let { 1: collateralFactor } = await comptroller.methods
 			.markets(cEthAddress)
 			.call();
-
-		console.log('Raw Redeem: ', temp / collateralFactor);
-
-		console.log('Qunatiy for redeem: ', balanceOfUnderlying / 0.75);
 
 		console.log('balUnder * 0.75: ', balanceOfUnderlying * 0.75);
 
@@ -161,6 +156,14 @@ class AppPage extends React.Component {
 			.call();
 		borrowBalance = borrowBalance / 1e18;
 
+		console.log('liquidty * 0.75', liquidity * 0.75);
+		console.log(
+			'supply- borrow',
+			web3.utils.fromWei(
+				(_balanceOfUnderlying - borrowBalance).toString()
+			)
+		);
+
 		this.setState({
 			eth_balance,
 			ceth_balance,
@@ -168,6 +171,8 @@ class AppPage extends React.Component {
 			balanceOfUnderlying,
 			borrowLimit,
 			borrowBalance,
+			liquidity,
+			borrowLimitInEth: balanceOfUnderlying * 0.75,
 			marketEntered: liquidity === '0' ? false : true,
 		});
 	};
@@ -344,6 +349,10 @@ class AppPage extends React.Component {
 			}.bind(this)
 		);
 
+		let borrowLimitPercent =
+			((this.state.borrowLimitInEth - this.state.liquidity) * 100) /
+			this.state.borrowLimitInEth;
+
 		return (
 			<div className='app-container'>
 				{this.state.address ? (
@@ -368,31 +377,45 @@ class AppPage extends React.Component {
 					<CircularProgress />
 				)}
 
-				<div className='grid-container'>
-					<Supply
-						supplyETH={this.supplyETH}
-						eth_balance={this.state.eth_balance}
-						supplyLoading={this.state.supplyLoading}
-					/>
-					<Redeem
-						balanceOfUnderlying={this.state.balanceOfUnderlying}
-						redeemLoading={this.state.redeemLoading}
-						redeemETH={this.redeemETH}
-					/>
+				<div className='borrow-limit'>
+					<p id='bar-title'>Borrow Limit</p>
+					<div className='borrow-bar'>
+						<div
+							id='borrow-filled'
+							style={{ width: `${borrowLimitPercent}%` }}
+						></div>
+					</div>
+					<p id='bar-num'>{this.state.borrowLimitInEth}</p>
+				</div>
 
-					<Borrow
-						borrowLimit={this.state.borrowLimit}
-						borrowDai={this.borrowDai}
-						borrowLoading={this.state.borrowLoading}
-						marketEntered={this.state.marketEntered}
-						enterMarketLoading={this.state.enterMarketLoading}
-						enterMarket={this.enterMarket}
-					/>
-					<Repay
-						repayDai_balance={this.state.borrowBalance}
-						repayLoan={this.repayLoan}
-						repayLoading={this.state.repayLoading}
-					/>
+				<div className='flex-container'>
+					<div className='supply-container'>
+						<Supply
+							supplyETH={this.supplyETH}
+							eth_balance={this.state.eth_balance}
+							supplyLoading={this.state.supplyLoading}
+						/>
+						<Redeem
+							balanceOfUnderlying={this.state.balanceOfUnderlying}
+							redeemLoading={this.state.redeemLoading}
+							redeemETH={this.redeemETH}
+						/>
+					</div>
+					<div className='borrow-container'>
+						<Borrow
+							borrowLimit={this.state.borrowLimit}
+							borrowDai={this.borrowDai}
+							borrowLoading={this.state.borrowLoading}
+							marketEntered={this.state.marketEntered}
+							enterMarketLoading={this.state.enterMarketLoading}
+							enterMarket={this.enterMarket}
+						/>
+						<Repay
+							repayDai_balance={this.state.borrowBalance}
+							repayLoan={this.repayLoan}
+							repayLoading={this.state.repayLoading}
+						/>
+					</div>
 				</div>
 				<div
 					style={{

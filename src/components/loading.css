@@ -1,16 +1,16 @@
 .lds-ellipsis {
 	display: inline-block;
 	position: relative;
+	height: 35px;
 	width: 80px;
-	height: 80px;
 }
 .lds-ellipsis div {
 	position: absolute;
-	top: 33px;
+	top: 10px;
 	width: 13px;
 	height: 13px;
 	border-radius: 50%;
-	background: linear-gradient(to left, #00f260, #0575e6);
+	background: hotpink;
 	animation-timing-function: cubic-bezier(0, 1, 1, 0);
 }
 .lds-ellipsis div:nth-child(1) {

@@ -3,6 +3,8 @@ import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
 
+import '../loading.css';
+
 const StyledTextField = withStyles({
 	root: {
 		'& label.Mui-focused': {
@@ -18,10 +20,10 @@ const StyledTextField = withStyles({
 
 const StyledButton = withStyles(() => ({
 	root: {
-		backgroundColor: '#00d395',
+		backgroundColor: 'hotpink',
 		color: 'white',
 		'&:hover': {
-			backgroundColor: '#00d395',
+			backgroundColor: 'hotpink',
 		},
 	},
 }))(Button);
