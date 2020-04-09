@@ -69,6 +69,7 @@ class Supply extends React.Component {
 						shrink: true,
 					}}
 					variant='outlined'
+					disabled={this.props.transactionLoading}
 					onChange={this.supplyEthHandler}
 				/>
 				<br></br>

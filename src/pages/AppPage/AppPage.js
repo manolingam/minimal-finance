@@ -71,6 +71,8 @@ class AppPage extends React.Component {
 			repayLoading: false,
 			successSnackbarOpen: false,
 			failSnackbarOpen: false,
+			appLoaded: false,
+			transactionLoading: false,
 		};
 	}
 
@@ -196,12 +198,14 @@ class AppPage extends React.Component {
 			borrowBalanceInEth: borrowBalanceInDai * daiPriceInEth,
 			borrowLimitInEth: balanceOfUnderlying * collateralFactor,
 			marketEntered: liquidity === '0' ? false : true,
+			appLoaded: true,
+			transactionLoading: false,
 		});
 	};
 
 	supplyETH = async (supplyEthValue) => {
 		if (supplyEthValue) {
-			this.setState({ supplyLoading: true });
+			this.setState({ supplyLoading: true, transactionLoading: true });
 
 			const { cEth, web3 } = this.props.values;
 			const address = this.state.address;
@@ -233,7 +237,7 @@ class AppPage extends React.Component {
 		const { cEth, web3 } = this.props.values;
 		const address = this.state.address;
 
-		this.setState({ redeemLoading: true });
+		this.setState({ redeemLoading: true, transactionLoading: true });
 
 		redeemEthValue = web3.utils.toWei(redeemEthValue, 'ether');
 
@@ -262,7 +266,7 @@ class AppPage extends React.Component {
 	};
 
 	borrowDai = async (daiToBorrow) => {
-		this.setState({ borrowLoading: true });
+		this.setState({ borrowLoading: true, transactionLoading: true });
 
 		const { web3, cDai } = this.props.values;
 		const address = this.state.address;
@@ -303,7 +307,7 @@ class AppPage extends React.Component {
 	};
 
 	repayLoan = async (repayValue) => {
-		this.setState({ repayLoading: true });
+		this.setState({ repayLoading: true, transactionLoading: true });
 
 		const { dai, web3, cDai } = this.props.values;
 		const address = this.state.address;
@@ -367,9 +371,12 @@ class AppPage extends React.Component {
 		window.ethereum.on(
 			'accountsChanged',
 			async function (accounts) {
-				this.setState({ address: accounts[0] }, async () => {
-					this.getBalances();
-				});
+				this.setState(
+					{ address: accounts[0], appLoaded: false },
+					async () => {
+						this.getBalances();
+					}
+				);
 			}.bind(this)
 		);
 
@@ -388,6 +395,7 @@ class AppPage extends React.Component {
 							borrowBalanceInEth={this.state.borrowBalanceInEth}
 							cEthBalance={this.state.ceth_balance}
 							exchangeRate={this.state.exchangeRate}
+							appLoaded={this.state.appLoaded}
 						/>
 						<div className='nav-account'>
 							<img
@@ -404,7 +412,7 @@ class AppPage extends React.Component {
 					<CircularProgress />
 				)}
 
-				{this.state.borrowLimitInEth ? (
+				{this.state.appLoaded ? (
 					<div className='borrow-limit'>
 						<p id='bar-title'>Borrow Limit</p>
 						<LightTooltip
@@ -426,29 +434,40 @@ class AppPage extends React.Component {
 				)}
 
 				<div className='flex-container'>
-					{this.state.eth_balance ? (
+					{this.state.appLoaded ? (
 						<div className='supply-container'>
 							<Supply
 								supplyETH={this.supplyETH}
 								eth_balance={this.state.eth_balance}
 								supplyLoading={this.state.supplyLoading}
+								appLoaded={this.state.appLoaded}
+								transactionLoading={
+									this.state.transactionLoading
+								}
 							/>
 							<Redeem
 								ethForReedem={this.state.ethForReedem}
 								redeemLoading={this.state.redeemLoading}
 								redeemETH={this.redeemETH}
+								appLoaded={this.state.appLoaded}
+								transactionLoading={
+									this.state.transactionLoading
+								}
 							/>
 						</div>
 					) : (
 						<Skeleton variant='rect' width={310} height={118} />
 					)}
-					{this.state.eth_balance ? (
+					{this.state.appLoaded ? (
 						this.state.marketEntered ? (
 							<div className='borrow-container'>
 								<Borrow
 									borrowLimit={this.state.borrowLimitInDai}
 									borrowDai={this.borrowDai}
 									borrowLoading={this.state.borrowLoading}
+									transactionLoading={
+										this.state.transactionLoading
+									}
 								/>
 								<Repay
 									repayDai_balance={
@@ -456,6 +475,9 @@ class AppPage extends React.Component {
 									}
 									repayLoan={this.repayLoan}
 									repayLoading={this.state.repayLoading}
+									transactionLoading={
+										this.state.transactionLoading
+									}
 								/>
 							</div>
 						) : this.state.enterMarketLoading ? (

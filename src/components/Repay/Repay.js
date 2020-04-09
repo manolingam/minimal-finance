@@ -69,6 +69,7 @@ class Repay extends React.Component {
 						shrink: true,
 					}}
 					variant='outlined'
+					disabled={this.props.transactionLoading}
 					onChange={this.repayLoanHandler}
 				/>
 				<br></br>

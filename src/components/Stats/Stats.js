@@ -54,7 +54,7 @@ class Stats extends React.Component {
 					alt='floating'
 				></img>
 
-				{this.state.balanceOfUnderlying ? (
+				{this.props.appLoaded ? (
 					<LightTooltip
 						placement='right'
 						title='Your supplied ETH currently earning interest (updated every 15 secs)'
@@ -73,7 +73,7 @@ class Stats extends React.Component {
 					<Skeleton animation='wave' width={350} height={50} />
 				)}
 
-				{this.props.cEthBalance ? (
+				{this.props.appLoaded ? (
 					<LightTooltip
 						placement='left'
 						title={`Your cToken Balance. Each cToken value increases as you earn interest. 1 cETH = ${this.props.exchangeRate} ETH.`}
@@ -92,8 +92,7 @@ class Stats extends React.Component {
 					<Skeleton animation='wave' width={350} height={50} />
 				)}
 
-				{this.props.borrowBalanceInEth ||
-				this.props.borrowBalanceInEth === 0 ? (
+				{this.props.appLoaded ? (
 					<LightTooltip
 						placement='right'
 						title='Your pending loan value in ETH that needs to be repaid.'

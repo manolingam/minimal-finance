@@ -19,8 +19,9 @@
 #address {
 	font-size: 0.7em;
 	font-style: italic;
-	font-weight: bold;
-	font-family: 'Major Mono Display', monospace;
+	/* font-weight: bold; */
+	color: rgb(104, 103, 103);
+	font-family: 'Roboto Slab', serif;
 }
 
 .app-container {

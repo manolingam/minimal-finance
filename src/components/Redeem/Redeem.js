@@ -66,6 +66,7 @@ class Redeem extends React.Component {
 						shrink: true,
 					}}
 					variant='outlined'
+					disabled={this.props.transactionLoading}
 					onChange={this.redeemEthHandler}
 				/>
 				<br></br>
