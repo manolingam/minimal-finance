@@ -121,6 +121,7 @@ class App extends React.Component {
 					<HomePage
 						cEth={this.state.cEth}
 						cDai={this.state.cDai}
+						web3={this.state.web3}
 						networkID={this.state.networkID}
 					/>
 				</Route>

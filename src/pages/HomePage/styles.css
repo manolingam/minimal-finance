@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Slab&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Major+Mono+Display&display=swap');
 
-.home-container,
-.loader {
+.home-container {
 	height: 100vh;
 	display: flex;
 	flex-direction: row;
@@ -45,5 +45,78 @@
 	}
 	to {
 		transform: translate(0, -0px);
+	}
+}
+
+.title-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+#app-title {
+	font-size: 1.8em;
+	color: black;
+	font-weight: bold;
+	text-align: center;
+	font-family: 'Major Mono Display', monospace;
+}
+
+.app-phrase-1 {
+	color: hotpink;
+}
+
+.app-phrase-2 {
+	color: #00d395;
+}
+
+.app-phrase-1,
+.app-phrase-2 {
+	position: absolute;
+	display: block;
+	top: 20em;
+	font-size: 1.3em;
+
+	animation-duration: 12s;
+	animation-timing-function: ease-in-out;
+	animation-iteration-count: infinite;
+}
+
+.app-phrase-1 {
+	animation-name: anim-1;
+}
+
+.app-phrase-2 {
+	animation-name: anim-2;
+}
+
+@keyframes anim-1 {
+	0%,
+	8.3% {
+		opacity: 0;
+	}
+	8.3%,
+	25% {
+		opacity: 1;
+	}
+	33.33%,
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes anim-2 {
+	0%,
+	33.33% {
+		opacity: 0;
+	}
+	41.63%,
+	58.29% {
+		opacity: 1;
+	}
+	66.66%,
+	100% {
+		opacity: 0;
 	}
 }

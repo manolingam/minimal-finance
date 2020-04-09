@@ -5,6 +5,7 @@ import Identicon from 'identicon.js';
 import Snackbar from '@material-ui/core/Snackbar';
 import MuiAlert from '@material-ui/lab/Alert';
 import Button from '@material-ui/core/Button';
+import Tooltip from '@material-ui/core/Tooltip';
 import Skeleton from '@material-ui/lab/Skeleton';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -20,6 +21,15 @@ import Borrow from '../../components/Borrow/Borrow';
 import Repay from '../../components/Repay/Repay';
 import Stats from '../../components/Stats/Stats';
 import { CircularProgress } from '@material-ui/core';
+
+const LightTooltip = withStyles((theme) => ({
+	tooltip: {
+		backgroundColor: theme.palette.common.black,
+		color: 'white',
+		boxShadow: theme.shadows[1],
+		fontSize: 11,
+	},
+}))(Tooltip);
 
 const StyledButton = withStyles(() => ({
 	root: {
@@ -124,8 +134,9 @@ class AppPage extends React.Component {
 			+(await dai.methods.balanceOf(wallet_address).call()) / 1e18;
 
 		// exchange rate for ceth to eth
-		// let exchangeRate =
-		// 	(await cEth.methods.exchangeRateCurrent().call()) / 1e28;
+		let exchangeRate =
+			(await cEth.methods.exchangeRateCurrent().call()) / 1e28;
+		exchangeRate = exchangeRate.toFixed(3);
 
 		// underlying eth balance in compound
 		let _balanceOfUnderlying = await cEth.methods
@@ -148,7 +159,7 @@ class AppPage extends React.Component {
 			.markets(cEthAddress)
 			.call();
 
-		console.log('balUnder * 0.75: ', balanceOfUnderlying * 0.75);
+		collateralFactor = ((collateralFactor / 1e18) * 100) / 100;
 
 		// dai price in eth
 		let daiPriceInEth = await priceOracle.methods
@@ -159,36 +170,31 @@ class AppPage extends React.Component {
 		daiPriceInEth = daiPriceInEth.toFixed(6);
 
 		// available dai for borrowing
-		let borrowLimit = liquidity / daiPriceInEth;
-		console.log('Borrow limit: ', borrowLimit);
+		let borrowLimitInDai = liquidity / daiPriceInEth;
 
 		// pending dai balance that needs to be repaid
-		let borrowBalance = await cDai.methods
+		let borrowBalanceInDai = await cDai.methods
 			.borrowBalanceCurrent(wallet_address)
 			.call();
 
-		borrowBalance = borrowBalance / 1e18;
-
-		console.log('Borrow Balance: ', borrowBalance * daiPriceInEth);
-
-		console.log('liquidty * 0.75', liquidity * 0.75);
+		borrowBalanceInDai = borrowBalanceInDai / 1e18;
 
 		let ethForReedem =
-			balanceOfUnderlying - (borrowBalance * daiPriceInEth) / 0.75;
-
-		console.log('Eth that can be redeemed: ', ethForReedem);
+			balanceOfUnderlying -
+			(borrowBalanceInDai * daiPriceInEth) / collateralFactor;
 
 		this.setState({
 			eth_balance,
 			ceth_balance,
 			dai_balance,
 			balanceOfUnderlying,
-			borrowLimit,
-			borrowBalance,
+			borrowLimitInDai,
+			borrowBalanceInDai,
 			liquidity,
 			ethForReedem,
-			borrowBalanceInEth: borrowBalance * daiPriceInEth,
-			borrowLimitInEth: balanceOfUnderlying * 0.75,
+			exchangeRate,
+			borrowBalanceInEth: borrowBalanceInDai * daiPriceInEth,
+			borrowLimitInEth: balanceOfUnderlying * collateralFactor,
 			marketEntered: liquidity === '0' ? false : true,
 		});
 	};
@@ -380,6 +386,8 @@ class AppPage extends React.Component {
 							address={this.state.address}
 							web3={this.props.values.web3}
 							borrowBalanceInEth={this.state.borrowBalanceInEth}
+							cEthBalance={this.state.ceth_balance}
+							exchangeRate={this.state.exchangeRate}
 						/>
 						<div className='nav-account'>
 							<img
@@ -399,12 +407,18 @@ class AppPage extends React.Component {
 				{this.state.borrowLimitInEth ? (
 					<div className='borrow-limit'>
 						<p id='bar-title'>Borrow Limit</p>
-						<div className='borrow-bar'>
-							<div
-								id='borrow-filled'
-								style={{ width: `${borrowLimitPercent}%` }}
-							></div>
-						</div>
+						<LightTooltip
+							placement='top'
+							title='You can borrow upto 75% of your underlying balance.'
+							arrow
+						>
+							<div className='borrow-bar'>
+								<div
+									id='borrow-filled'
+									style={{ width: `${borrowLimitPercent}%` }}
+								></div>
+							</div>
+						</LightTooltip>
 						<p id='bar-num'>{this.state.borrowLimitInEth}</p>
 					</div>
 				) : (
@@ -432,12 +446,14 @@ class AppPage extends React.Component {
 						this.state.marketEntered ? (
 							<div className='borrow-container'>
 								<Borrow
-									borrowLimit={this.state.borrowLimit}
+									borrowLimit={this.state.borrowLimitInDai}
 									borrowDai={this.borrowDai}
 									borrowLoading={this.state.borrowLoading}
 								/>
 								<Repay
-									repayDai_balance={this.state.borrowBalance}
+									repayDai_balance={
+										this.state.borrowBalanceInDai
+									}
 									repayLoan={this.repayLoan}
 									repayLoading={this.state.repayLoading}
 								/>
