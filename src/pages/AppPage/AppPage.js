@@ -41,20 +41,8 @@ const StyledButton = withStyles(() => ({
 	},
 }))(Button);
 
-const StyledSnackBar = withStyles({
-	root: {
-		position: 'initial',
-		zIndex: '1400',
-		alignItems: 'center',
-		justifyContent: 'center',
-	},
-	anchorOriginBottomCenter: {
-		left: '50%',
-		right: 'auto',
-		bottom: '24px',
-		transform: 'none',
-	},
-})(Snackbar);
+const vertical = 'top';
+const horizontal = 'left';
 
 function Alert(props) {
 	return <MuiAlert elevation={6} variant='filled' {...props} />;
@@ -398,6 +386,7 @@ class AppPage extends React.Component {
 							appLoaded={this.state.appLoaded}
 						/>
 						<div className='nav-account'>
+							<p id='address'>{this.state.address}</p>
 							<img
 								src={`data:image/png;base64,${new Identicon(
 									this.state.address,
@@ -405,7 +394,6 @@ class AppPage extends React.Component {
 								).toString()}`}
 								alt='identicon'
 							></img>
-							<p id='address'>{this.state.address}</p>
 						</div>
 					</div>
 				) : (
@@ -510,22 +498,22 @@ class AppPage extends React.Component {
 						left: '1em',
 					}}
 				>
-					<StyledSnackBar
+					<Snackbar
 						open={this.state.successSnackbarOpen}
-						autoHideDuration={6000}
+						autoHideDuration={4000}
 						onClose={this.handleSnackBarClose}
+						anchorOrigin={{ vertical, horizontal }}
 					>
 						<Alert severity='success'>Transaction succeeded!</Alert>
-					</StyledSnackBar>
-					<StyledSnackBar
+					</Snackbar>
+					<Snackbar
 						open={this.state.failSnackbarOpen}
-						autoHideDuration={6000}
+						autoHideDuration={4000}
 						onClose={this.handleSnackBarClose}
+						anchorOrigin={{ vertical, horizontal }}
 					>
-						<Alert severity='error'>
-							Transaction either failed or rejected!
-						</Alert>
-					</StyledSnackBar>
+						<Alert severity='error'>Transaction failed!</Alert>
+					</Snackbar>
 				</div>
 			</div>
 		);

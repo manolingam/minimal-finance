@@ -88,18 +88,7 @@ class App extends React.Component {
 			<Router>
 				<nav className='nav'>
 					{this.state.address ? (
-						<div>
-							<Link to='/' className='nav-buttons'>
-								<StyledButton
-									variant='outlined'
-									onClick={() => {
-										this.setState({ address: '' });
-									}}
-								>
-									Exit
-								</StyledButton>
-							</Link>
-						</div>
+						<div></div>
 					) : this.state.networkID === 42 ? (
 						<Link to='/app' className='nav-buttons'>
 							<StyledButton
