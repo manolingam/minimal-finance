@@ -15,7 +15,7 @@
 }
 
 .stats img {
-	height: 150px;
+	height: 20vh;
 	width: auto;
 	animation-name: floating;
 	animation-duration: 3s;

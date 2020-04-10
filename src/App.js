@@ -1,10 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 import Web3 from 'web3';
 import 'animate.css';
-
-import Button from '@material-ui/core/Button';
-import { withStyles } from '@material-ui/core/styles';
 
 import HomePage from './pages/HomePage/HomePage';
 import AppPage from './pages/AppPage/AppPage';
@@ -20,12 +17,6 @@ const comptrollerAddress = '0x1f5d7f3caac149fe41b8bd62a3673fe6ec0ab73b';
 const comptrollerAbi = require('./abi/comptroller.json');
 const priceOracleAddress = '0x6998ed7daf969ea0950e01071aceeee54cccbab5';
 const priceOracleAbi = require('./abi/priceOracle.json');
-
-const StyledButton = withStyles({
-	label: {
-		color: 'black;',
-	},
-})(Button);
 
 class App extends React.Component {
 	constructor() {
@@ -84,34 +75,16 @@ class App extends React.Component {
 
 	render() {
 		const values = this.state;
+
 		return this.state.contracts_init ? (
 			<Router>
-				<nav className='nav'>
-					{this.state.address ? (
-						<div></div>
-					) : this.state.networkID === 42 ? (
-						<Link to='/app' className='nav-buttons'>
-							<StyledButton
-								variant='outlined'
-								onClick={this.connectAccount}
-							>
-								App
-							</StyledButton>
-						</Link>
-					) : (
-						<div className='nav-buttons'>
-							<StyledButton variant='outlined' disabled>
-								Switch to Kovan
-							</StyledButton>
-						</div>
-					)}
-				</nav>
 				<Route exact path='/'>
 					<HomePage
+						networkID={this.state.networkID}
 						cEth={this.state.cEth}
 						cDai={this.state.cDai}
 						web3={this.state.web3}
-						networkID={this.state.networkID}
+						connectAccount={this.connectAccount}
 					/>
 				</Route>
 				<Route exact path='/app'>
