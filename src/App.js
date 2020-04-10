@@ -84,8 +84,13 @@ class App extends React.Component {
 	}
 
 	connectAccount = async () => {
-		const address = await window.ethereum.enable();
-		this.setState({ address: address[0] });
+		try {
+			this.setState({ connectLoading: true });
+			const address = await window.ethereum.enable();
+			this.setState({ address: address[0], connectLoading: false });
+		} catch (err) {
+			this.setState({ connectLoading: false });
+		}
 	};
 
 	render() {
@@ -110,6 +115,8 @@ class App extends React.Component {
 							cEthAddress={cEthAddress}
 							cDaiAddress={cDaiAddress}
 						/>
+					) : this.state.connectLoading ? (
+						<div></div>
 					) : (
 						<div className='unauthorized'>
 							<p className='animated flash'>
