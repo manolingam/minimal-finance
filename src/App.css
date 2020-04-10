@@ -1,13 +1,3 @@
-.nav-buttons {
-	position: absolute;
-	top: 2em;
-	right: 1em;
-}
-
-a {
-	text-decoration: none;
-}
-
 .unauthorized {
 	height: 100vh;
 	display: flex;

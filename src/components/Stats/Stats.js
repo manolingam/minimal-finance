@@ -76,7 +76,7 @@ class Stats extends React.Component {
 
 					{this.props.appLoaded ? (
 						<LightTooltip
-							placement='left'
+							placement='right'
 							title={`Your cToken Balance. Each cToken value increases as you earn interest. 1 cETH = ${this.props.exchangeRate} ETH.`}
 							arrow
 						>

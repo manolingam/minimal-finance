@@ -19,23 +19,37 @@ class HomePage extends React.Component {
 	}
 
 	render() {
+		console.log('Web3 Browser', this.props.web3Browser);
 		return (
 			<div>
 				<nav className='nav'>
-					{this.props.networkID === 42 ? (
-						<Link to='/app' className='nav-buttons'>
-							<StyledButton
-								variant='outlined'
-								onClick={this.props.connectAccount}
-							>
-								App
-							</StyledButton>
-						</Link>
+					{this.props.web3Browser ? (
+						this.props.networkID === 42 ? (
+							<Link to='/app' className='nav-buttons'>
+								<StyledButton
+									variant='outlined'
+									onClick={this.props.connectAccount}
+								>
+									App
+								</StyledButton>
+							</Link>
+						) : (
+							<div className='nav-buttons'>
+								<StyledButton variant='outlined' disabled>
+									Switch to Kovan
+								</StyledButton>
+							</div>
+						)
 					) : (
 						<div className='nav-buttons'>
-							<StyledButton variant='outlined' disabled>
-								Switch to Kovan
-							</StyledButton>
+							<a
+								id='metamask-link'
+								href='https://metamask.io/'
+								target='_blank'
+								rel='noopener noreferrer'
+							>
+								INSTALL METAMASK
+							</a>
 						</div>
 					)}
 				</nav>
@@ -51,7 +65,9 @@ class HomePage extends React.Component {
 						alt='cDai'
 					></img>
 					<div className='title-container'>
-						<p id='app-title'>Minimal Finance</p>
+						<p id='app-title' className='animated zoomIn'>
+							Minimal Finance
+						</p>
 						<p className='app-phrase-1'>
 							Earn interest from your Ether!
 						</p>

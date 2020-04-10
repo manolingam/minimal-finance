@@ -1,7 +1,10 @@
 import React from 'react';
-import { BrowserRouter as Router, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Link } from 'react-router-dom';
 import Web3 from 'web3';
 import 'animate.css';
+
+import Button from '@material-ui/core/Button';
+import { withStyles } from '@material-ui/core/styles';
 
 import HomePage from './pages/HomePage/HomePage';
 import AppPage from './pages/AppPage/AppPage';
@@ -18,10 +21,18 @@ const comptrollerAbi = require('./abi/comptroller.json');
 const priceOracleAddress = '0x6998ed7daf969ea0950e01071aceeee54cccbab5';
 const priceOracleAbi = require('./abi/priceOracle.json');
 
+const StyledButton = withStyles({
+	label: {
+		color: 'black;',
+	},
+})(Button);
+
 class App extends React.Component {
 	constructor() {
 		super();
 		this.state = {
+			initFinished: false,
+			web3Browser: false,
 			provider: '',
 			address: '',
 			web3: '',
@@ -60,7 +71,11 @@ class App extends React.Component {
 				networkID,
 				contracts_init: true,
 				provider: window.ethereum,
+				web3Browser: true,
+				initFinished: true,
 			});
+		} else {
+			this.setState({ web3Browser: false, initFinished: true });
 		}
 	};
 
@@ -76,7 +91,7 @@ class App extends React.Component {
 	render() {
 		const values = this.state;
 
-		return this.state.contracts_init ? (
+		return this.state.initFinished ? (
 			<Router>
 				<Route exact path='/'>
 					<HomePage
@@ -85,6 +100,7 @@ class App extends React.Component {
 						cDai={this.state.cDai}
 						web3={this.state.web3}
 						connectAccount={this.connectAccount}
+						web3Browser={this.state.web3Browser}
 					/>
 				</Route>
 				<Route exact path='/app'>
@@ -99,6 +115,11 @@ class App extends React.Component {
 							<p className='animated flash'>
 								Unauthorized route!
 							</p>
+							<Link to='/' className='nav-buttons'>
+								<StyledButton variant='outlined'>
+									Home
+								</StyledButton>
+							</Link>
 						</div>
 					)}
 				</Route>
