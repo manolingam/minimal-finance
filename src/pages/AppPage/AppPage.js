@@ -515,6 +515,16 @@ class AppPage extends React.Component {
 						<Alert severity='error'>Transaction failed!</Alert>
 					</Snackbar>
 				</div>
+				<div className='faucet'>
+					<a
+						id='metamask-link'
+						href='https://faucet.kovan.network/'
+						target='_blank'
+						rel='noopener noreferrer'
+					>
+						GET TEST ETH
+					</a>
+				</div>
 			</div>
 		);
 	}
