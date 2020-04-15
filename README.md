@@ -1,5 +1,7 @@
 # Minimal Finance
 
+![app](https://raw.githubusercontent.com/manolingam/minimal-finance/master/src/assets/app-image.png)
+
 A minimal interface for users to earn interest and borrow dai from ether. 
 
 ## Tools used
